@@ -28,8 +28,8 @@ export type ArchidektCardsResponse = ArchidektCard[];
 export interface ArchidektCard {
   quantity: number;
   // User-defined category names (e.g. "Creature", "Commander"). May be null
-  // on older decks. Board type is inferred by checking for the specific strings
-  // "Commander", "Sideboard", "Companion" — everything else is mainboard.
+  // on older decks. Board type is inferred by checking for "Commander",
+  // "Sideboard", or "Companion" — everything else is mainboard.
   categories: string[] | null;
   modifier: 'Normal' | 'Foil' | 'Etched';
   card: {
@@ -48,6 +48,8 @@ export interface ArchidektOracleCard {
   cmc: number;
   // Field is "types" (string[]), not "typeLine" (string)
   types: string[];
+  superTypes: string[];
+  subTypes: string[];
   // Full English color names: "Green", "Black" — NOT single letters "G", "B"
   colorIdentity: string[];
   colors: string[];
@@ -59,10 +61,37 @@ export interface ArchidektFace {
   name: string;
   manaCost: string;
   types: string[];
+  superTypes: string[];
+  subTypes: string[];
   colors: string[];
 }
 
-// Deck list (requires authentication as of May 2026)
+// Deck summaries embedded in the profile page __NEXT_DATA__ blob.
+// Fetched by scraping archidekt.com/u/{username} — no auth required.
+export interface ArchidektProfileDeckSummary {
+  id: number;
+  name: string;
+  deckFormat: number;
+  updatedAt: string;
+  private: boolean;
+  unlisted: boolean;
+  colors: { W: number; U: number; B: number; R: number; G: number };
+  featured: string;
+  theorycrafted: boolean;
+}
+
+// Shape of the __NEXT_DATA__ script tag content on user profile pages
+export interface ArchidektNextData {
+  props: {
+    pageProps: {
+      user: {
+        decks: ArchidektProfileDeckSummary[];
+      };
+    };
+  };
+}
+
+// Deck list endpoint (requires authentication as of May 2026)
 export interface ArchidektDeckListResponse {
   count: number;
   next: string | null;

@@ -34,8 +34,11 @@ export type {
   ArchidektCard,
   ArchidektOracleCard,
   ArchidektFace,
+  ArchidektProfileDeckSummary,
+  ArchidektNextData,
   ArchidektDeckListResponse,
   ArchidektDeckSummary,
 } from './archidekt';
 
-export type { FetchError } from './errors';
+export { FetchError } from './errors';
+export type { FetchErrorReason } from './errors';
