@@ -18,9 +18,13 @@ https://api2.moxfield.com
 ```
 
 ### Known Stability
-Community-reverse-engineered. No official documentation. Has historically been
-available for public deck data without authentication. Subject to change without
-notice. Monitor for 401/403 responses as a signal that access has been restricted.
+Community-reverse-engineered. No official documentation. **As of May 2026,
+all server-side requests are blocked by Cloudflare WAF (HTTP 403), regardless
+of User-Agent.** The API appears to require browser-originated requests with
+valid challenge cookies. This is a critical open risk for Phase 2 — the
+fetcher strategy for Moxfield must be resolved before implementation begins.
+Response shapes below are based on prior community documentation and have not
+been directly verified via API testing.
 
 ---
 
@@ -152,15 +156,23 @@ https://archidekt.com/api
 
 ### Known Stability
 More openly documented than Moxfield. Archidekt has acknowledged community API
-usage. Still treat as unofficial — no SLA or versioning guarantees.
+usage. Still treat as unofficial — no SLA or versioning guarantees. Verified
+accessible via server-side requests as of May 2026, with the endpoint changes
+noted below.
 
 ---
 
 ### Endpoints
 
 #### List a User's Decks
+
+> **Status as of May 2026:** Requires authentication. `GET /decks/?owner=`
+> returns HTTP 404 ("Client Unavailable"). `GET /decks/small/?owner=` returns
+> HTTP 401. No unauthenticated list endpoint has been found. **This endpoint
+> is currently a blocker for Archidekt support and must be resolved in Phase 2.**
+
 ```
-GET /decks/?owner={username}&formats={formatId}
+GET /decks/small/?owner={username}   ← requires authentication (401)
 ```
 
 **Query Parameters**
@@ -173,7 +185,7 @@ GET /decks/?owner={username}&formats={formatId}
 | pageSize  | number | Default 48                                      |
 | orderBy   | string | e.g. "lastUpdate", "-lastUpdate" for descending |
 
-**Response Shape (abbreviated)**
+**Response Shape (abbreviated — unverified, auth required)**
 ```typescript
 interface ArchidektDeckListResponse {
   count: number;
@@ -186,11 +198,8 @@ interface ArchidektDeckSummary {
   id: number;                   // Deck ID — use for full deck fetch
   name: string;
   owner: { username: string };
-  format: number;               // Numeric format ID — see Format Map below
-  featured: string;             // Featured card name
-  deckColors: {
-    colorIdentity: string[];    // e.g. ["B", "G", "U"]
-  };
+  deckFormat: number;           // Numeric format ID — see Format Map below
+  featured: string;             // Featured card image URL
   createdAt: string;            // ISO 8601
   updatedAt: string;            // ISO 8601
   cardCount: number;
@@ -217,54 +226,94 @@ const ARCHIDEKT_FORMAT_MAP: Record<number, Format> = {
 
 ---
 
-#### Get Full Deck
+#### Get Deck Metadata
 ```
-GET /decks/{deckId}/small/
+GET /decks/{deckId}/
+GET /decks/{deckId}/small/     ← same shape, but cards array is always empty
 ```
 
-**Response Shape (abbreviated)**
+**Response Shape (verified May 2026)**
 ```typescript
 interface ArchidektDeckResponse {
   id: number;
   name: string;
   description: string;
-  format: number;
+  deckFormat: number;           // NOTE: field is "deckFormat", not "format"
   owner: { username: string };
   createdAt: string;
   updatedAt: string;
-  cards: ArchidektCard[];
+  categories: ArchidektDeckCategory[];
+  private: boolean;
+  unlisted: boolean;
 }
+
+interface ArchidektDeckCategory {
+  id: number;
+  name: string;
+  isPremier: boolean;           // true for the primary board categories
+  includedInDeck: boolean;
+  includedInPrice: boolean;
+}
+```
+
+#### Get Deck Cards
+```
+GET /decks/{deckId}/cards/
+```
+
+Cards are a separate endpoint — they are NOT included in the deck metadata
+response above. This is a change from earlier API behavior.
+
+**Response Shape (verified May 2026)**
+```typescript
+type ArchidektCardsResponse = ArchidektCard[];
 
 interface ArchidektCard {
   quantity: number;
-  categories: string[];         // e.g. ["Commander"], ["Mainboard"], ["Sideboard"]
+  categories: string[] | null;  // User-defined category names. Null on older decks.
   modifier: 'Normal' | 'Foil' | 'Etched';
   card: {
     uid: string;                // Scryfall ID — canonical identifier
     oracleCard: {
       name: string;
-      manaSymbols: string;      // Raw mana cost string e.g. "{2}{G}{G}"
+      manaCost: string;         // Raw mana cost string e.g. "{2}{G}{G}"
+                                // NOTE: field is "manaCost", not "manaSymbols"
       cmc: number;
-      typeLine: string;
-      colorIdentity: string[];
-      colors: string[];
+      types: string[];          // NOTE: field is "types" (array), not "typeLine" (string)
+      colorIdentity: string[];  // Full English names: "Green", "Black" — NOT single letters
+      colors: string[];         // Same: "Green", "Black" — NOT "G", "B"
+      faces: ArchidektFace[];   // Non-empty only for double-faced cards
     };
     edition: {
-      editioncode: string;      // Set code e.g. "MH3"
+      editioncode: string;      // Set code e.g. "mh3" (lowercase)
     };
   }
+}
+
+interface ArchidektFace {
+  name: string;
+  manaCost: string;
+  types: string[];
+  colors: string[];
 }
 ```
 
 **Notes**
-- Board type is inferred from `categories`. Map as follows:
+- **Board type** is inferred from `categories`. The field contains user-defined
+  category names (e.g. "Creature", "Instant") — not fixed board slot identifiers.
+  Map as follows:
   - `categories` includes `"Commander"` → `boardType: 'commander'`
   - `categories` includes `"Sideboard"` → `boardType: 'sideboard'`
   - `categories` includes `"Companion"` → `boardType: 'companion'`
-  - All others → `boardType: 'mainboard'`
+  - `categories` is `null` or contains anything else → `boardType: 'mainboard'`
 - `card.uid` is the Scryfall ID and must be used as `scryfallId`.
 - `modifier` maps to `isFoil: true` when value is `'Foil'` or `'Etched'`.
 - Archidekt does not expose an `isProxy` field. Default to `false`.
+- `colorIdentity` and `colors` use full English color names. Normalizer must
+  map them: `"White"→"W"`, `"Blue"→"U"`, `"Black"→"B"`, `"Red"→"R"`,
+  `"Green"→"G"`, `"Colorless"→"C"`.
+- `edition.editioncode` is lowercase (e.g. `"mh3"`). Normalizers may uppercase
+  if needed for consistency.
 
 ---
 
@@ -277,13 +326,14 @@ All fetchers must handle the following cases explicitly:
 | Username not found        | Return empty deck list, do not throw                    |
 | API unreachable (network) | Throw a typed `FetchError` with `platform` and `reason` |
 | Rate limited (429)        | Throw a typed `FetchError`, surface to UI               |
+| Auth required (401/403)   | Throw a typed `FetchError` with `reason: 'auth_required'`, surface to UI |
 | Unexpected shape          | Log a warning, skip the offending deck, continue        |
 | Empty deck list           | Return empty array — valid state, not an error          |
 
 ```typescript
 interface FetchError {
   platform: Platform;
-  reason: 'not_found' | 'rate_limited' | 'network_error' | 'unknown';
+  reason: 'not_found' | 'rate_limited' | 'auth_required' | 'network_error' | 'unknown';
   message: string;
   statusCode?: number;
 }
@@ -299,6 +349,7 @@ interface FetchError {
   Prefix it: `archidekt:${id}`.
 - Both APIs paginate. Fetchers are responsible for assembling all pages before
   returning. Do not expose pagination to the normalizer layer.
-- Response shapes documented here are based on community observation as of
-  early 2026. Validate shapes at runtime and fail gracefully if fields are
-  missing or renamed.
+- Archidekt response shapes were verified via direct API testing in May 2026.
+  Moxfield shapes are unverified — server-side requests are currently blocked
+  by Cloudflare WAF. Validate all shapes at runtime and fail gracefully if
+  fields are missing or renamed.
