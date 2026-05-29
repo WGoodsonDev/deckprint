@@ -35,7 +35,7 @@ function makeDeckMetadata(
     id: 42,
     name: 'Test Deck',
     description: 'A test deck',
-    deckFormat: 5,
+    deckFormat: 3,
     owner: { username: 'testuser' },
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-06-01T00:00:00Z',
@@ -256,9 +256,15 @@ describe('normalizeDeck', () => {
     expect(result.sourcePlatform).toBe('archidekt');
   });
 
-  it('maps deckFormat 5 to commander', () => {
-    expect(normalizeDeck(makeDeckMetadata({ deckFormat: 5 }), []).format).toBe(
+  it('maps deckFormat 3 to commander', () => {
+    expect(normalizeDeck(makeDeckMetadata({ deckFormat: 3 }), []).format).toBe(
       'commander'
+    );
+  });
+
+  it('maps deckFormat 5 to vintage', () => {
+    expect(normalizeDeck(makeDeckMetadata({ deckFormat: 5 }), []).format).toBe(
+      'vintage'
     );
   });
 

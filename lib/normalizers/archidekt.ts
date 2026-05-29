@@ -6,16 +6,16 @@ import type {
 } from '@/types/archidekt';
 import type { CardEntry, CardType, Color, Deck, Format } from '@/types/core';
 
+// Verified against pyrchidekt library and live API sampling (May 2026).
+// Formats not in our Format union (brawl, oathbreaker, etc.) fall through to 'other'.
 const FORMAT_MAP: Record<number, Format> = {
-  1: 'standard',
-  2: 'modern',
-  3: 'legacy',
-  4: 'vintage',
-  5: 'commander',
-  6: 'pauper',
-  9: 'pioneer',
-  10: 'draft',
-  11: 'sealed',
+  1:  'standard',
+  2:  'modern',
+  3:  'commander',
+  4:  'legacy',
+  5:  'vintage',
+  6:  'pauper',
+  15: 'pioneer',
 };
 
 const COLOR_MAP: Record<string, Color> = {

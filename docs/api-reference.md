@@ -207,22 +207,43 @@ interface ArchidektDeckSummary {
 ```
 
 **Archidekt Format ID Map**
+
+Verified against the pyrchidekt open-source library and live API sampling
+(May 2026). The original community documentation had IDs 3–5 and 9 wrong.
+
 ```typescript
-// NOTE: This map may require updates as Archidekt adds new formats.
-// Flag as a maintenance point during each audit.
 const ARCHIDEKT_FORMAT_MAP: Record<number, Format> = {
   1:  'standard',
   2:  'modern',
-  3:  'legacy',
-  4:  'vintage',
-  5:  'commander',
+  3:  'commander',   // was incorrectly documented as 'legacy'
+  4:  'legacy',      // was incorrectly documented as 'vintage'
+  5:  'vintage',     // was incorrectly documented as 'commander'
   6:  'pauper',
-  9:  'pioneer',
-  10: 'draft',
-  11: 'sealed',
+  // 7:  custom
+  // 8:  frontier / oldschool
+  // 9:  future standard
+  // 10: penny dreadful
+  // 11: 1v1 commander
+  // 12: duel commander
+  // 13: brawl
+  // 14: oathbreaker
+  15: 'pioneer',     // was incorrectly documented as 9
+  // 16: historic
+  // 17: pauper commander
+  // 18: alchemy
+  // 19: explorer
+  // 20: historic brawl
+  // 21: gladiator
+  // 22: premodern
+  // 23: predh
+  // 24: timeless
+  // 25: canadian highlander
   // All others → 'other'
 };
 ```
+
+Note: `draft` and `sealed` are in the internal `Format` type for potential
+future use but do not correspond to any known Archidekt format ID.
 
 ---
 
