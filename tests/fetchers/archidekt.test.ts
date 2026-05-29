@@ -118,15 +118,32 @@ describe('fetchUserDeckSummaries', () => {
     expect(result).toEqual([]);
   });
 
+  it('throws FetchError with rate_limited on 429', async () => {
+    mockFetch(429, {});
+    await expect(fetchUserDeckSummaries('testuser')).rejects.toMatchObject({
+      reason: 'rate_limited',
+      statusCode: 429,
+    });
+  });
+
+  it('throws FetchError with auth_required on 401', async () => {
+    mockFetch(401, {});
+    await expect(fetchUserDeckSummaries('testuser')).rejects.toMatchObject({
+      reason: 'auth_required',
+      statusCode: 401,
+    });
+  });
+
   it('throws FetchError with network_error on network failure', async () => {
     mockFetchNetworkError();
-    await expect(fetchUserDeckSummaries('testuser')).rejects.toBeInstanceOf(
-      FetchError
-    );
-    await expect(fetchUserDeckSummaries('testuser')).rejects.toMatchObject({
-      reason: 'network_error',
-      platform: 'archidekt',
-    });
+    let caught: unknown;
+    try {
+      await fetchUserDeckSummaries('testuser');
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(FetchError);
+    expect(caught).toMatchObject({ reason: 'network_error', platform: 'archidekt' });
   });
 
   it('throws FetchError with unknown on non-200 non-404 status', async () => {

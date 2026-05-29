@@ -245,6 +245,39 @@ const ARCHIDEKT_FORMAT_MAP: Record<number, Format> = {
 Note: `draft` and `sealed` are in the internal `Format` type for potential
 future use but do not correspond to any known Archidekt format ID.
 
+#### Workaround: Profile Page Scrape (currently active)
+
+Because the authenticated list endpoint is unavailable, the implementation
+scrapes the public profile page instead.
+
+**URL pattern:** `https://archidekt.com/u/{username}`
+
+**Mechanism:** Parse the `<script id="__NEXT_DATA__" type="application/json">`
+tag from the HTML response and extract `props.pageProps.user.decks`.
+
+**Filter applied:** Exclude decks where `private === true` or
+`unlisted === true`. Only public, listed decks are returned.
+
+**Stability risk:** This relies on a Next.js SSR implementation detail. Any
+Archidekt frontend deploy can change or remove the `__NEXT_DATA__` structure
+without notice. The normalizer should treat this path as fragile and fail
+gracefully if the expected shape is absent.
+
+```typescript
+// Shape of each deck object inside __NEXT_DATA__.props.pageProps.user.decks
+interface ArchidektProfileDeckSummary {
+  id: number;
+  name: string;
+  deckFormat: number;
+  updatedAt: string;
+  private: boolean;
+  unlisted: boolean;
+  colors: { W: number; U: number; B: number; R: number; G: number };
+  featured: string;
+  theorycrafted: boolean;
+}
+```
+
 ---
 
 #### Get Deck Metadata
@@ -301,6 +334,8 @@ interface ArchidektCard {
                                 // NOTE: field is "manaCost", not "manaSymbols"
       cmc: number;
       types: string[];          // NOTE: field is "types" (array), not "typeLine" (string)
+      superTypes: string[];     // e.g. ["Legendary", "Snow"] — may be empty
+      subTypes: string[];       // e.g. ["Elf", "Druid"] — may be empty
       colorIdentity: string[];  // Full English names: "Green", "Black" — NOT single letters
       colors: string[];         // Same: "Green", "Black" — NOT "G", "B"
       faces: ArchidektFace[];   // Non-empty only for double-faced cards
@@ -315,8 +350,15 @@ interface ArchidektFace {
   name: string;
   manaCost: string;
   types: string[];
+  superTypes: string[];
+  subTypes: string[];
   colors: string[];
 }
+```
+
+> `superTypes` and `subTypes` are treated as potentially absent at runtime.
+> The normalizer uses optional chaining and falls back to `faces[0]` fields
+> for double-faced cards, then to `[]` if both are absent.
 ```
 
 **Notes**
@@ -352,13 +394,22 @@ All fetchers must handle the following cases explicitly:
 | Empty deck list           | Return empty array — valid state, not an error          |
 
 ```typescript
-interface FetchError {
-  platform: Platform;
-  reason: 'not_found' | 'rate_limited' | 'auth_required' | 'network_error' | 'unknown';
-  message: string;
-  statusCode?: number;
+class FetchError extends Error {
+  readonly platform: Platform;
+  readonly reason: FetchErrorReason;
+  readonly statusCode?: number;
 }
+
+type FetchErrorReason =
+  | 'not_found'
+  | 'rate_limited'
+  | 'auth_required'
+  | 'network_error'
+  | 'unknown';
 ```
+
+> Implemented as a class (not an interface) to support `instanceof` checks
+> in API route error handlers. `message` is inherited from `Error`.
 
 ---
 

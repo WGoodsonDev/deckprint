@@ -36,6 +36,24 @@ export async function fetchUserDeckSummaries(
     return [];
   }
 
+  if (response.status === 429) {
+    throw new FetchError(
+      'archidekt',
+      'rate_limited',
+      `Rate limited fetching Archidekt profile for "${username}"`,
+      429
+    );
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    throw new FetchError(
+      'archidekt',
+      'auth_required',
+      `Auth required fetching Archidekt profile for "${username}"`,
+      response.status
+    );
+  }
+
   if (!response.ok) {
     throw new FetchError(
       'archidekt',

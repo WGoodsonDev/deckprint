@@ -49,7 +49,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             );
             return null;
           }
-          throw error;
+          const message = error instanceof Error ? error.message : String(error);
+          console.warn(
+            `Skipping deck ${summary.id} (${summary.name}) due to unexpected error: ${message}`
+          );
+          return null;
         }
       })
     );

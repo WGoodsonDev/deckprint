@@ -363,4 +363,11 @@ describe('normalizeDeck', () => {
     const result = normalizeDeck(makeDeckMetadata({ description: '' }), []);
     expect(result.description).toBeNull();
   });
+
+  it('returns empty commanders array for a non-Commander format (Modern) deck', () => {
+    const cards = [makeCard({ categories: ['Creature'] })];
+    const result = normalizeDeck(makeDeckMetadata({ deckFormat: 2 }), cards);
+    expect(result.commanders).toEqual([]);
+    expect(result.format).toBe('modern');
+  });
 });
