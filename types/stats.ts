@@ -20,7 +20,8 @@ export interface CurveProfile {
 }
 
 export interface FormatProfile {
-  formatCounts: Record<Format, number>;
+  // Partial: formats with zero decks are omitted rather than stored as 0
+  formatCounts: Partial<Record<Format, number>>;
   primaryFormat: Format;
 }
 
