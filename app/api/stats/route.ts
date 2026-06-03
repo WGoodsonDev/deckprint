@@ -2,26 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resolveUserDecks } from '@/lib/userDecks';
 import { computeProfileStats } from '@/lib/aggregators';
 import { FetchError } from '@/types/errors';
-import type { Platform } from '@/types/core';
+import type { Deck } from '@/types/core';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
-  const username = searchParams.get('username')?.trim();
-  const platform = searchParams.get('platform');
+  const moxfield = searchParams.get('moxfield')?.trim() || null;
+  const archidekt = searchParams.get('archidekt')?.trim() || null;
   const includeParam = searchParams.get('include');
 
-  if (!username) {
-    return NextResponse.json({ error: 'username is required' }, { status: 400 });
+  if (!moxfield && !archidekt) {
+    return NextResponse.json(
+      { error: 'At least one of moxfield or archidekt is required' },
+      { status: 400 }
+    );
   }
-
-  const VALID_PLATFORMS: Platform[] = ['archidekt', 'moxfield'];
-  if (!platform || !VALID_PLATFORMS.includes(platform as Platform)) {
-    return NextResponse.json({ error: 'Unsupported platform' }, { status: 400 });
-  }
-  const validatedPlatform = platform as Platform; // safe: just validated above
 
   try {
-    const allDecks = await resolveUserDecks(username, validatedPlatform);
+    const results = await Promise.all([
+      moxfield ? resolveUserDecks(moxfield, 'moxfield') : Promise.resolve(null),
+      archidekt ? resolveUserDecks(archidekt, 'archidekt') : Promise.resolve(null),
+    ]);
+
+    const allDecks: Deck[] = [];
+    if (moxfield && results[0]) allDecks.push(...results[0]);
+    if (archidekt && results[1]) allDecks.push(...results[1]);
 
     const decks =
       includeParam !== null

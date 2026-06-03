@@ -1,35 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveUserDecks } from '@/lib/userDecks';
 import { FetchError } from '@/types/errors';
-import type { Platform, UserProfile } from '@/types/core';
+import type { Deck, PlatformSource, UserProfile } from '@/types/core';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
-  const username = searchParams.get('username')?.trim();
-  const platform = searchParams.get('platform');
+  const moxfield = searchParams.get('moxfield')?.trim() || null;
+  const archidekt = searchParams.get('archidekt')?.trim() || null;
 
-  if (!username) {
-    return NextResponse.json({ error: 'username is required' }, { status: 400 });
+  if (!moxfield && !archidekt) {
+    return NextResponse.json(
+      { error: 'At least one of moxfield or archidekt is required' },
+      { status: 400 }
+    );
   }
-
-  const VALID_PLATFORMS: Platform[] = ['archidekt', 'moxfield'];
-  if (!platform || !VALID_PLATFORMS.includes(platform as Platform)) {
-    return NextResponse.json({ error: 'Unsupported platform' }, { status: 400 });
-  }
-  const validatedPlatform = platform as Platform; // safe: just validated above
 
   try {
-    const validDecks = await resolveUserDecks(username, validatedPlatform);
+    const results = await Promise.all([
+      moxfield ? resolveUserDecks(moxfield, 'moxfield') : Promise.resolve(null),
+      archidekt ? resolveUserDecks(archidekt, 'archidekt') : Promise.resolve(null),
+    ]);
+
+    const sources: PlatformSource[] = [];
+    const allDecks: Deck[] = [];
+
+    if (moxfield && results[0]) {
+      sources.push({ platform: 'moxfield', username: moxfield, deckCount: results[0].length });
+      allDecks.push(...results[0]);
+    }
+    if (archidekt && results[1]) {
+      sources.push({ platform: 'archidekt', username: archidekt, deckCount: results[1].length });
+      allDecks.push(...results[1]);
+    }
 
     const profile: UserProfile = {
-      sources: [
-        {
-          platform: validatedPlatform,
-          username,
-          deckCount: validDecks.length,
-        },
-      ],
-      decks: validDecks,
+      sources,
+      decks: allDecks,
       fetchedAt: new Date().toISOString(),
     };
 
