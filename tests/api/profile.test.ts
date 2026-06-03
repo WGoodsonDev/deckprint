@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { GET } from '@/app/api/stats/route';
+import { GET } from '@/app/api/profile/route';
 import { FetchError } from '@/types/errors';
 import { makeDeck } from '../aggregators/fixtures';
 
@@ -13,7 +13,7 @@ import { resolveUserDecks } from '@/lib/userDecks';
 const mockResolveUserDecks = vi.mocked(resolveUserDecks);
 
 function makeRequest(params: Record<string, string>): NextRequest {
-  const url = new URL('http://localhost/api/stats');
+  const url = new URL('http://localhost/api/profile');
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v);
   }
@@ -24,61 +24,36 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('GET /api/stats', () => {
-  it('returns 200 with ProfileStats for all decks when no include param', async () => {
-    const decks = [
-      makeDeck({ id: 'archidekt:1' }),
-      makeDeck({ id: 'archidekt:2' }),
-    ];
+describe('GET /api/profile', () => {
+  it('returns 200 with one source entry for archidekt-only request', async () => {
+    const decks = [makeDeck({ id: 'archidekt:1' }), makeDeck({ id: 'archidekt:2' })];
     mockResolveUserDecks.mockResolvedValue(decks);
 
     const res = await GET(makeRequest({ archidekt: 'testuser' }));
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body).toHaveProperty('colorProfile');
-    expect(body).toHaveProperty('curveProfile');
-    expect(body).toHaveProperty('formatProfile');
-    expect(body).toHaveProperty('cardOverlap');
-    expect(body).toHaveProperty('archetypeProfile');
+    expect(body.sources).toHaveLength(1);
+    expect(body.sources[0]).toEqual({ platform: 'archidekt', username: 'testuser', deckCount: 2 });
+    expect(body.decks).toHaveLength(2);
     expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
 
-  it('passes only matching decks to computeProfileStats when include param is set', async () => {
-    const decks = [
-      makeDeck({ id: 'archidekt:1' }),
-      makeDeck({ id: 'archidekt:2' }),
-      makeDeck({ id: 'archidekt:3' }),
-    ];
+  it('returns 200 with one source entry for moxfield-only request', async () => {
+    const decks = [makeDeck({ id: 'moxfield:1' })];
     mockResolveUserDecks.mockResolvedValue(decks);
 
-    const res = await GET(
-      makeRequest({ archidekt: 'testuser', include: 'archidekt:1,archidekt:3' })
-    );
+    const res = await GET(makeRequest({ moxfield: 'moxuser' }));
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    // formatProfile.formatCounts should reflect exactly 2 commander decks
-    // (makeDeck defaults to format: 'commander')
-    expect(body.formatProfile.formatCounts.commander).toBe(2);
+    expect(body.sources).toHaveLength(1);
+    expect(body.sources[0]).toEqual({ platform: 'moxfield', username: 'moxuser', deckCount: 1 });
+    expect(body.decks).toHaveLength(1);
+    expect(mockResolveUserDecks).toHaveBeenCalledWith('moxuser', 'moxfield');
   });
 
-  it('returns 200 with zero-value stats when include contains only unrecognized IDs', async () => {
-    const decks = [makeDeck({ id: 'archidekt:1' })];
-    mockResolveUserDecks.mockResolvedValue(decks);
-
-    const res = await GET(
-      makeRequest({ archidekt: 'testuser', include: 'archidekt:999' })
-    );
-    const body = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(body).toHaveProperty('colorProfile');
-    // No decks matched — format counts should be empty
-    expect(Object.keys(body.formatProfile.formatCounts)).toHaveLength(0);
-  });
-
-  it('returns 200 with merged stats when both platforms are provided', async () => {
+  it('returns 200 with two source entries and merged decks when both platforms provided', async () => {
     const archiDecks = [makeDeck({ id: 'archidekt:1' }), makeDeck({ id: 'archidekt:2' })];
     const moxDecks = [makeDeck({ id: 'moxfield:1' })];
     mockResolveUserDecks.mockImplementation((_username, platform) =>
@@ -89,7 +64,14 @@ describe('GET /api/stats', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.formatProfile.formatCounts.commander).toBe(3);
+    expect(body.sources).toHaveLength(2);
+    expect(body.sources.find((s: { platform: string }) => s.platform === 'moxfield')).toEqual({
+      platform: 'moxfield', username: 'moxuser', deckCount: 1,
+    });
+    expect(body.sources.find((s: { platform: string }) => s.platform === 'archidekt')).toEqual({
+      platform: 'archidekt', username: 'archiuser', deckCount: 2,
+    });
+    expect(body.decks).toHaveLength(3);
   });
 
   it('returns 400 when neither moxfield nor archidekt param is provided', async () => {
@@ -110,6 +92,18 @@ describe('GET /api/stats', () => {
 
     expect(res.status).toBe(404);
     expect(body.error).toBe('User not found');
+  });
+
+  it('returns 403 when resolveUserDecks throws FetchError auth_required', async () => {
+    mockResolveUserDecks.mockRejectedValue(
+      new FetchError('moxfield', 'auth_required', 'Cloudflare blocked request')
+    );
+
+    const res = await GET(makeRequest({ moxfield: 'moxuser' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe('Cloudflare blocked request');
   });
 
   it('returns 429 when resolveUserDecks throws FetchError rate_limited', async () => {
