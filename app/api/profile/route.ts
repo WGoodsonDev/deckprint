@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveUserDecks } from '@/lib/userDecks';
 import { FetchError } from '@/types/errors';
-import type { UserProfile } from '@/types/core';
+import type { Platform, UserProfile } from '@/types/core';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
@@ -12,20 +12,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'username is required' }, { status: 400 });
   }
 
-  if (platform !== 'archidekt') {
-    return NextResponse.json(
-      { error: 'Only platform=archidekt is supported' },
-      { status: 400 }
-    );
+  const VALID_PLATFORMS: Platform[] = ['archidekt', 'moxfield'];
+  if (!platform || !VALID_PLATFORMS.includes(platform as Platform)) {
+    return NextResponse.json({ error: 'Unsupported platform' }, { status: 400 });
   }
+  const validatedPlatform = platform as Platform; // safe: just validated above
 
   try {
-    const validDecks = await resolveUserDecks(username);
+    const validDecks = await resolveUserDecks(username, validatedPlatform);
 
     const profile: UserProfile = {
       sources: [
         {
-          platform: 'archidekt',
+          platform: validatedPlatform,
           username,
           deckCount: validDecks.length,
         },
