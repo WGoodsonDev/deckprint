@@ -123,4 +123,71 @@ describe('GET /api/stats', () => {
     expect(res.status).toBe(429);
     expect(body.error).toBe('Rate limited');
   });
+
+  it('returns 200 with partial stats when one source fails with auth_required', async () => {
+    const archiDecks = [makeDeck({ id: 'archidekt:1' }), makeDeck({ id: 'archidekt:2' })];
+    mockResolveUserDecks.mockImplementation((_username, platform) => {
+      if (platform === 'moxfield')
+        return Promise.reject(new FetchError('moxfield', 'auth_required', 'Cloudflare blocked request'));
+      return Promise.resolve(archiDecks);
+    });
+
+    const res = await GET(makeRequest({ moxfield: 'moxuser', archidekt: 'archiuser' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toHaveProperty('colorProfile');
+    expect(body.formatProfile.formatCounts.commander).toBe(2);
+    expect(body.sourceErrors).toHaveLength(1);
+    expect(body.sourceErrors[0]).toMatchObject({
+      platform: 'moxfield',
+      username: 'moxuser',
+      reason: 'auth_required',
+    });
+  });
+
+  it('returns 200 with partial stats when one source fails with not_found', async () => {
+    const archiDecks = [makeDeck({ id: 'archidekt:1' })];
+    mockResolveUserDecks.mockImplementation((_username, platform) => {
+      if (platform === 'moxfield')
+        return Promise.reject(new FetchError('moxfield', 'not_found', 'User not found'));
+      return Promise.resolve(archiDecks);
+    });
+
+    const res = await GET(makeRequest({ moxfield: 'ghost', archidekt: 'archiuser' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.formatProfile.formatCounts.commander).toBe(1);
+    expect(body.sourceErrors).toHaveLength(1);
+    expect(body.sourceErrors[0].reason).toBe('not_found');
+  });
+
+  it('returns 404 when both sources fail and first error is not_found', async () => {
+    mockResolveUserDecks.mockImplementation((_username, platform) => {
+      if (platform === 'moxfield')
+        return Promise.reject(new FetchError('moxfield', 'not_found', 'Moxfield user not found'));
+      return Promise.reject(new FetchError('archidekt', 'not_found', 'Archidekt user not found'));
+    });
+
+    const res = await GET(makeRequest({ moxfield: 'ghost', archidekt: 'ghost2' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(404);
+    expect(body.error).toBe('Moxfield user not found');
+  });
+
+  it('returns status derived from first error when both sources fail with different reasons', async () => {
+    mockResolveUserDecks.mockImplementation((_username, platform) => {
+      if (platform === 'moxfield')
+        return Promise.reject(new FetchError('moxfield', 'auth_required', 'Cloudflare blocked request'));
+      return Promise.reject(new FetchError('archidekt', 'not_found', 'Archidekt user not found'));
+    });
+
+    const res = await GET(makeRequest({ moxfield: 'moxuser', archidekt: 'ghost' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe('Cloudflare blocked request');
+  });
 });

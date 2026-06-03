@@ -1,3 +1,5 @@
+import type { FetchErrorReason } from './errors';
+
 export type Color = 'W' | 'U' | 'B' | 'R' | 'G' | 'C';
 
 export type Platform = 'moxfield' | 'archidekt';
@@ -83,8 +85,16 @@ export interface PlatformSource {
   deckCount: number;
 }
 
+export interface SourceError {
+  platform: Platform;
+  username: string;
+  reason: FetchErrorReason;
+  message: string;
+}
+
 export interface UserProfile {
   sources: PlatformSource[];
+  sourceErrors?: SourceError[];
   decks: Deck[];
   fetchedAt: string;
 }
