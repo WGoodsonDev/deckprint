@@ -41,7 +41,7 @@ describe('GET /api/stats', () => {
     expect(body).toHaveProperty('formatProfile');
     expect(body).toHaveProperty('cardOverlap');
     expect(body).toHaveProperty('archetypeProfile');
-    expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser');
+    expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
 
   it('passes only matching decks to computeProfileStats when include param is set', async () => {
@@ -87,7 +87,7 @@ describe('GET /api/stats', () => {
   });
 
   it('returns 400 when platform is unsupported', async () => {
-    const res = await GET(makeRequest({ username: 'testuser', platform: 'moxfield' }));
+    const res = await GET(makeRequest({ username: 'testuser', platform: 'hearthstone' }));
     const body = await res.json();
 
     expect(res.status).toBe(400);
