@@ -20,8 +20,8 @@ standards, layer rules, and architecture, see `CLAUDE.md`.
 
 ## Current Status
 
-**Active phase:** Phase 7 — Partial-Source Resilience 🔄
-**Tests passing (start of Phase 7):** 121
+**Active phase:** Phase 8 — Dashboard UI 🔄
+**Tests passing (start of Phase 8):** 129
 **Known blocker:** Moxfield blocked by Cloudflare WAF (403/auth_required).
 Archidekt fully operational. See `/docs/api-reference.md`.
 
@@ -102,7 +102,7 @@ Moxfield callers — direct motivation for Phase 7.
 
 ---
 
-## Phase 7 — Partial-Source Resilience 🔄
+## Phase 7 — Partial-Source Resilience ✅
 
 ### Reference files
 - `CLAUDE.md`
@@ -291,7 +291,7 @@ New cases:
 
 ---
 
-## Phase 8 — Dashboard UI ⬜
+## Phase 8 — Dashboard UI 🔄
 
 ### Reference files
 - `CLAUDE.md`
