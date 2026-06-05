@@ -1,4 +1,4 @@
-import type { CardEntry, Color, Format } from './core';
+import type { CardEntry, Color, Format, SourceError } from './core';
 
 export interface ProfileStats {
   colorProfile: ColorProfile;
@@ -6,6 +6,7 @@ export interface ProfileStats {
   formatProfile: FormatProfile;
   cardOverlap: CardOverlapProfile;
   archetypeProfile: ArchetypeProfile;
+  sourceErrors?: SourceError[];
 }
 
 export interface ColorProfile {

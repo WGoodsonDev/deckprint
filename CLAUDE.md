@@ -7,7 +7,7 @@ Users provide Moxfield and/or Archidekt username(s); the app fetches their
 public decklists, normalizes the data, and renders an analytics dashboard
 with the option to export a shareable report card.
 
-For current project state, active phase, and phase specs, see `ROADMAP.md`.
+For current project state, active phase, and phase specs, see `/docs/roadmap.md`.
 
 ---
 

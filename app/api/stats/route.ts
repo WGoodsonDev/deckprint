@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resolveUserDecks } from '@/lib/userDecks';
 import { computeProfileStats } from '@/lib/aggregators';
 import { FetchError } from '@/types/errors';
-import type { Deck } from '@/types/core';
+import type { Deck, Platform, PlatformSource, SourceError } from '@/types/core';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
@@ -17,40 +17,62 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  try {
-    const results = await Promise.all([
-      moxfield ? resolveUserDecks(moxfield, 'moxfield') : Promise.resolve(null),
-      archidekt ? resolveUserDecks(archidekt, 'archidekt') : Promise.resolve(null),
-    ]);
+  const platforms: Array<{ username: string; platform: Platform } | null> = [
+    moxfield ? { username: moxfield, platform: 'moxfield' } : null,
+    archidekt ? { username: archidekt, platform: 'archidekt' } : null,
+  ];
 
-    const allDecks: Deck[] = [];
-    if (moxfield && results[0]) allDecks.push(...results[0]);
-    if (archidekt && results[1]) allDecks.push(...results[1]);
+  const results = await Promise.allSettled(
+    platforms.map((p) =>
+      p ? resolveUserDecks(p.username, p.platform) : Promise.resolve(null)
+    )
+  );
 
-    const decks =
-      includeParam !== null
-        ? (() => {
-            const ids = new Set(includeParam.split(',').map((s) => s.trim()));
-            return allDecks.filter((d) => ids.has(d.id));
-          })()
-        : allDecks;
+  const sources: PlatformSource[] = [];
+  const allDecks: Deck[] = [];
+  const sourceErrors: SourceError[] = [];
 
-    return NextResponse.json(computeProfileStats(decks));
-  } catch (error) {
-    if (error instanceof FetchError) {
-      const status =
-        error.reason === 'not_found'
-          ? 404
-          : error.reason === 'auth_required'
-            ? 403
-            : error.reason === 'rate_limited'
-              ? 429
-              : 502;
-
-      return NextResponse.json({ error: error.message }, { status });
+  for (let i = 0; i < platforms.length; i++) {
+    const p = platforms[i];
+    if (!p) continue;
+    const result = results[i];
+    if (result.status === 'fulfilled' && result.value) {
+      sources.push({ platform: p.platform, username: p.username, deckCount: result.value.length });
+      allDecks.push(...result.value);
+    } else if (result.status === 'rejected') {
+      const err = result.reason;
+      sourceErrors.push({
+        platform: p.platform,
+        username: p.username,
+        reason: err instanceof FetchError ? err.reason : 'unknown',
+        message: err instanceof FetchError ? err.message : 'Unexpected error',
+      });
+      if (!(err instanceof FetchError)) {
+        console.error(`Unexpected error fetching ${p.platform}:`, err);
+      }
     }
-
-    console.error('Unexpected error in /api/stats:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+
+  if (sources.length === 0) {
+    const first = sourceErrors[0];
+    const status =
+      first.reason === 'not_found'     ? 404 :
+      first.reason === 'auth_required' ? 403 :
+      first.reason === 'rate_limited'  ? 429 : 502;
+    return NextResponse.json({ error: first.message }, { status });
+  }
+
+  const decks =
+    includeParam !== null
+      ? (() => {
+          const ids = new Set(includeParam.split(',').map((s) => s.trim()));
+          return allDecks.filter((d) => ids.has(d.id));
+        })()
+      : allDecks;
+
+  const stats = computeProfileStats(decks);
+  return NextResponse.json({
+    ...stats,
+    ...(sourceErrors.length > 0 && { sourceErrors }),
+  });
 }
