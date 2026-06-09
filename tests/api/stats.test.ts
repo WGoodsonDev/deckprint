@@ -41,6 +41,7 @@ describe('GET /api/stats', () => {
     expect(body).toHaveProperty('formatProfile');
     expect(body).toHaveProperty('cardOverlap');
     expect(body).toHaveProperty('archetypeProfile');
+    expect(body.sourceErrors).toBeUndefined();
     expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
 

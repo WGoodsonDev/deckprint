@@ -36,6 +36,7 @@ describe('GET /api/profile', () => {
     expect(body.sources).toHaveLength(1);
     expect(body.sources[0]).toEqual({ platform: 'archidekt', username: 'testuser', deckCount: 2 });
     expect(body.decks).toHaveLength(2);
+    expect(body.sourceErrors).toBeUndefined();
     expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
 

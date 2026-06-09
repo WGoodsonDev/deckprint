@@ -86,6 +86,7 @@ function normalizeEntry(
     boardType,
     manaCost: entry.card.mana_cost ?? null,
     cmc: entry.card.cmc,
+    // Moxfield already returns single-letter codes ("W", "U", etc.) matching Color exactly
     colors: entry.card.colors as Color[],
     colorIdentity: entry.card.color_identity as Color[],
     typeLine: entry.card.type_line,

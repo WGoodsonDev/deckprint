@@ -85,15 +85,23 @@ Represents a user's full cross-platform deck collection as loaded into the app.
 
 ```typescript
 interface UserProfile {
-  sources: PlatformSource[];   // One entry per connected platform username
-  decks: Deck[];               // All fetched decks, across all platforms
-  fetchedAt: string;           // ISO 8601 — when this profile was last fetched
+  sources: PlatformSource[];      // One entry per connected platform that succeeded
+  sourceErrors?: SourceError[];   // Omitted entirely when all sources succeed
+  decks: Deck[];                  // All fetched decks, across all platforms
+  fetchedAt: string;              // ISO 8601 — when this profile was last fetched
 }
 
 interface PlatformSource {
   platform: Platform;
   username: string;
   deckCount: number;
+}
+
+interface SourceError {
+  platform: Platform;
+  username: string;
+  reason: FetchErrorReason;   // from /types/errors — not redeclared here
+  message: string;
 }
 ```
 
@@ -143,6 +151,7 @@ interface ProfileStats {
   formatProfile: FormatProfile;
   cardOverlap: CardOverlapProfile;
   archetypeProfile: ArchetypeProfile;
+  sourceErrors?: SourceError[];   // Omitted entirely when all sources succeed
 }
 
 interface ColorProfile {
@@ -160,7 +169,8 @@ interface CurveProfile {
 }
 
 interface FormatProfile {
-  formatCounts: Record<Format, number>;
+  // Partial: formats with zero decks are omitted rather than stored as 0
+  formatCounts: Partial<Record<Format, number>>;
   primaryFormat: Format;         // Most common format across decks
 }
 
