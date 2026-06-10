@@ -49,7 +49,7 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
 
   return (
     <div className="h-56">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 224 }}>
         <PieChart>
           <Pie
             data={chartData}

@@ -35,7 +35,7 @@ export function ArchetypeRadar({ data, isLoading, error }: ArchetypeRadarProps) 
 
   return (
     <div className="h-56">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 224 }}>
         <RadarChart data={chartData}>
           <PolarGrid stroke="#e4e4e7" />
           <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />

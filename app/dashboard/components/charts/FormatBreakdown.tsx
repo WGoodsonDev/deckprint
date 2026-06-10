@@ -47,7 +47,7 @@ export function FormatBreakdown({ data, isLoading, error }: FormatBreakdownProps
         </p>
       )}
       <div className="h-48">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 192 }}>
           <BarChart data={chartData} margin={{ top: 0, right: 8, bottom: 0, left: -16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
             <XAxis dataKey="format" tick={{ fontSize: 11 }} />
