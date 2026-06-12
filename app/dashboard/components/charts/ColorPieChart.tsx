@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { ColorProfile } from '@/types/stats';
+import type { Color } from '@/types/core';
 
 interface ColorPieChartProps {
   data: ColorProfile | null;
@@ -16,7 +17,7 @@ interface ColorPieChartProps {
   error: string | null;
 }
 
-const SINGLE_COLOR_HEX: Record<string, string> = {
+const SINGLE_COLOR_HEX: Record<Color, string> = {
   W: '#d4c060',
   U: '#1472b8',
   B: '#3c3c3c',
@@ -25,11 +26,22 @@ const SINGLE_COLOR_HEX: Record<string, string> = {
   C: '#a8a8a8',
 };
 
-const MULTICOLOR_HEX = '#e8c840';
+const STRIPE_SIZE = 8;
 
-function identityColor(identity: string): string {
-  if (identity.length === 1) return SINGLE_COLOR_HEX[identity] ?? '#cccccc';
-  return MULTICOLOR_HEX;
+function patternId(identity: string): string {
+  return `color-pattern-${identity}`;
+}
+
+function identityFill(identity: string): string {
+  if (identity.length === 1) {
+    return SINGLE_COLOR_HEX[identity as Color] ?? '#cccccc';
+  }
+  return `url(#${patternId(identity)})`;
+}
+
+function formatIdentityLabel(identity: string): string {
+  if (identity === 'C') return 'Colorless';
+  return identity.split('').join('/');
 }
 
 export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
@@ -47,33 +59,75 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
     value: count,
   }));
 
+  const multicolorIdentities = chartData
+    .map((entry) => entry.name)
+    .filter((identity) => identity.length > 1);
+
+  const totalCount = chartData.reduce((sum, entry) => sum + entry.value, 0);
+  const percentByIdentity = new Map(
+    chartData.map((entry) => [entry.name, (entry.value / totalCount) * 100])
+  );
+
   return (
-    <div className="h-56">
-      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 224 }}>
+    <div className="h-64">
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
+        <defs>
+          {multicolorIdentities.map((identity) => {
+            const colors = identity.split('') as Color[];
+            const stripeWidth = STRIPE_SIZE / colors.length;
+            return (
+              <pattern
+                key={identity}
+                id={patternId(identity)}
+                width={STRIPE_SIZE}
+                height={STRIPE_SIZE}
+                patternUnits="userSpaceOnUse"
+                patternTransform="rotate(45)"
+              >
+                {colors.map((color, i) => (
+                  <rect
+                    key={color}
+                    x={i * stripeWidth}
+                    y={0}
+                    width={stripeWidth}
+                    height={STRIPE_SIZE}
+                    fill={SINGLE_COLOR_HEX[color] ?? '#cccccc'}
+                  />
+                ))}
+              </pattern>
+            );
+          })}
+        </defs>
+      </svg>
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 256 }}>
         <PieChart>
           <Pie
             data={chartData}
             dataKey="value"
             nameKey="name"
-            cx="50%"
+            cx="40%"
             cy="50%"
             outerRadius={80}
-            label={({ name, percent }) =>
-              (percent ?? 0) > 0.04 ? `${name} ${((percent ?? 0) * 100).toFixed(0)}%` : ''
-            }
-            labelLine={false}
           >
             {chartData.map((entry) => (
-              <Cell key={entry.name} fill={identityColor(entry.name)} />
+              <Cell key={entry.name} fill={identityFill(entry.name)} />
             ))}
           </Pie>
           <Tooltip
-            formatter={(value) => {
+            formatter={(value, _name, item) => {
               const count = typeof value === 'number' ? value : 0;
-              return [`${count} deck${count !== 1 ? 's' : ''}`, 'Count'];
+              return [`${count} deck${count !== 1 ? 's' : ''}`, formatIdentityLabel(item.payload.name)];
             }}
           />
-          <Legend />
+          <Legend
+            layout="vertical"
+            verticalAlign="middle"
+            align="right"
+            formatter={(value) => {
+              const percent = percentByIdentity.get(String(value)) ?? 0;
+              return `${formatIdentityLabel(String(value))} ${percent.toFixed(0)}%`;
+            }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>
@@ -82,7 +136,7 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
 
 function ChartShell({ label, isError }: { label: string; isError?: boolean }) {
   return (
-    <div className={`flex h-56 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400'}`}>
+    <div className={`flex h-64 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400'}`}>
       {label}
     </div>
   );
