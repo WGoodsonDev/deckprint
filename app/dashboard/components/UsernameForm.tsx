@@ -7,15 +7,24 @@ interface UsernameFormProps {
   isLoading: boolean;
 }
 
+type PlatformSelection = 'moxfield' | 'archidekt' | 'both';
+
+const PLATFORM_OPTIONS: { value: PlatformSelection; label: string }[] = [
+  { value: 'moxfield', label: 'Moxfield' },
+  { value: 'archidekt', label: 'Archidekt' },
+  { value: 'both', label: 'Both' },
+];
+
 export function UsernameForm({ onSubmit, isLoading }: UsernameFormProps) {
+  const [platform, setPlatform] = useState<PlatformSelection>('archidekt');
   const [moxfield, setMoxfield] = useState('');
   const [archidekt, setArchidekt] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const m = moxfield.trim();
-    const a = archidekt.trim();
+    const m = platform !== 'archidekt' ? moxfield.trim() : '';
+    const a = platform !== 'moxfield' ? archidekt.trim() : '';
     if (!m && !a) {
       setValidationError('Enter at least one username.');
       return;
@@ -26,34 +35,60 @@ export function UsernameForm({ onSubmit, isLoading }: UsernameFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
-      <div className="flex flex-col gap-1">
-        <label htmlFor="moxfield-input" className="text-sm font-medium text-zinc-700">
-          Moxfield username
-        </label>
-        <input
-          id="moxfield-input"
-          type="text"
-          value={moxfield}
-          onChange={(e) => setMoxfield(e.target.value)}
-          placeholder="e.g. tehgoyf"
-          disabled={isLoading}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="archidekt-input" className="text-sm font-medium text-zinc-700">
-          Archidekt username
-        </label>
-        <input
-          id="archidekt-input"
-          type="text"
-          value={archidekt}
-          onChange={(e) => setArchidekt(e.target.value)}
-          placeholder="e.g. saffronolive"
-          disabled={isLoading}
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-        />
-      </div>
+      <fieldset className="flex flex-col gap-1">
+        <legend className="text-sm font-medium text-zinc-700">Platform</legend>
+        <div className="flex gap-4 py-2">
+          {PLATFORM_OPTIONS.map((option) => (
+            <label key={option.value} className="flex items-center gap-1.5 text-sm text-zinc-700">
+              <input
+                type="radio"
+                name="platform"
+                value={option.value}
+                checked={platform === option.value}
+                onChange={() => setPlatform(option.value)}
+                disabled={isLoading}
+                className="accent-indigo-600"
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      {platform !== 'archidekt' && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="moxfield-input" className="text-sm font-medium text-zinc-700">
+            Moxfield username
+          </label>
+          <input
+            id="moxfield-input"
+            type="text"
+            value={moxfield}
+            onChange={(e) => setMoxfield(e.target.value)}
+            placeholder="e.g. tehgoyf"
+            disabled={isLoading}
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+          />
+        </div>
+      )}
+
+      {platform !== 'moxfield' && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="archidekt-input" className="text-sm font-medium text-zinc-700">
+            Archidekt username
+          </label>
+          <input
+            id="archidekt-input"
+            type="text"
+            value={archidekt}
+            onChange={(e) => setArchidekt(e.target.value)}
+            placeholder="e.g. saffronolive"
+            disabled={isLoading}
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+          />
+        </div>
+      )}
+
       <div className="flex flex-col gap-1 sm:pb-0">
         {validationError && (
           <p className="text-sm text-red-600">{validationError}</p>

@@ -39,13 +39,17 @@ username input fields.
 **Why:** Most users only have one deckbuilding platform/username — the
 current form may force entering both unnecessarily, adding friction.
 **Acceptance criteria:**
-- [ ] Form renders one username field and one platform selector by default.
-- [ ] Selecting "both platforms" (or similar) reveals a second username field.
-- [ ] Submitting with only one platform/username queries only that platform.
-**Notes:** Need to define UI control type (radio vs dropdown) and the exact
-trigger for revealing the second field.
+- [x] Form renders one username field and one platform selector by default.
+- [x] Selecting "both platforms" (or similar) reveals a second username field.
+- [x] Submitting with only one platform/username queries only that platform.
+**Notes:** Implemented as a 3-option radio group (Moxfield / Archidekt /
+Both) defaulting to Archidekt, given Moxfield's known WAF blocker. Selecting
+"Both" reveals both username fields; `onSubmit(moxfield, archidekt)`
+signature unchanged — empty platforms pass `''`, which `page.tsx` already
+omits from the query string. Verified: "Both" mode with only Archidekt
+filled queries Archidekt only.
 **Priority:** medium
-**Status:** idea
+**Status:** done
 
 ---
 
