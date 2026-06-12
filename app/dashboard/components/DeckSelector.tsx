@@ -1,7 +1,9 @@
 'use client';
 
-import type { Deck } from '@/types/core';
+import { useMemo, useState } from 'react';
+import type { Deck, Format } from '@/types/core';
 import { ColorIdentityPips } from './ColorIdentityPips';
+import { DeckFilters, DEFAULT_DECK_FILTERS, type DeckFiltersState } from './DeckFilters';
 
 interface DeckSelectorProps {
   decks: Deck[];
@@ -14,7 +16,35 @@ function formatLabel(format: string): string {
   return format.charAt(0).toUpperCase() + format.slice(1);
 }
 
+function matchesFilters(deck: Deck, filters: DeckFiltersState): boolean {
+  if (filters.format !== 'all' && deck.format !== filters.format) {
+    return false;
+  }
+  if (filters.colors.length > 0 && !filters.colors.every((color) => deck.colorIdentity.includes(color))) {
+    return false;
+  }
+  if (filters.minCardCount !== '' && deck.cardCount < Number(filters.minCardCount)) {
+    return false;
+  }
+  if (filters.maxCardCount !== '' && deck.cardCount > Number(filters.maxCardCount)) {
+    return false;
+  }
+  return true;
+}
+
 export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: DeckSelectorProps) {
+  const [filters, setFilters] = useState<DeckFiltersState>(DEFAULT_DECK_FILTERS);
+
+  const availableFormats = useMemo(() => {
+    const formats = new Set<Format>(decks.map((deck) => deck.format));
+    return Array.from(formats).sort();
+  }, [decks]);
+
+  const filteredDecks = useMemo(
+    () => decks.filter((deck) => matchesFilters(deck, filters)),
+    [decks, filters]
+  );
+
   if (decks.length === 0) {
     return <p className="text-sm text-zinc-400">No decks found.</p>;
   }
@@ -23,16 +53,25 @@ export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: Dec
 
   return (
     <div>
+      <DeckFilters availableFormats={availableFormats} filters={filters} onChange={setFilters} />
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-zinc-500">
           {includedCount} of {decks.length} deck{decks.length !== 1 ? 's' : ''} included
+          {filteredDecks.length !== decks.length && (
+            <span className="ml-2 text-zinc-400">
+              (showing {filteredDecks.length})
+            </span>
+          )}
           {isRefetching && (
             <span className="ml-2 text-indigo-500">Updating…</span>
           )}
         </p>
       </div>
+      {filteredDecks.length === 0 ? (
+        <p className="text-sm text-zinc-400">No decks match the current filters.</p>
+      ) : (
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {decks.map((deck) => {
+        {filteredDecks.map((deck) => {
           const included = includedIds.has(deck.id);
           return (
             <button
@@ -65,6 +104,7 @@ export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: Dec
           );
         })}
       </div>
+      )}
     </div>
   );
 }

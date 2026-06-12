@@ -232,17 +232,25 @@ follow-up work.
 
 ### Deck Filtering Controls
 
-**What:** Add checkbox filters to the deck selector for format, card count,
-color identity, and other deck attributes.
-**Why:** Lets users narrow down which decks are included in the profile
+**What:** Add filters to the deck selector for format, card count, and color
+identity.
+**Why:** Lets users narrow down which decks are visible in the deck grid
 without scrolling through a long list.
 **Acceptance criteria:**
-- [ ] Filters for format, card count range, and color identity are available.
-- [ ] Filtering updates the included deck set and triggers re-aggregation.
-**Notes:** "Other attributes" needs to be defined — what additional metadata
-is available per deck?
+- [x] Filters for format, card count range, and color identity are available.
+- [x] Filtering only narrows which decks are shown in the grid — it does not
+  change `includedDeckIds` or trigger re-aggregation. The "X of Y decks
+  included" count always reflects the full toggle state, not the filtered
+  view.
+**Notes:** Implemented as new `DeckFilters.tsx`, with filter state owned
+locally by `DeckSelector` (the grid owner). Format is a dropdown of formats
+present across the user's decks; color identity is a multi-select of color
+pips where a deck matches if its identity contains all selected colors; card
+count is a min/max numeric range. A "Clear filters" button appears once any
+filter is active, and a "(showing N)" suffix appears next to the inclusion
+count when the filtered view differs from the full deck list.
 **Priority:** medium
-**Status:** idea
+**Status:** done
 
 ### Enriched Deck Display
 
