@@ -184,13 +184,14 @@ be added to or removed from the current view.
 **Why:** Lets users explore how individual decks contribute to their overall
 mana curve.
 **Acceptance criteria:**
-- [ ] Mana curve chart re-renders when decks are toggled in/out.
-- [ ] Toggle state is shared with (or driven by) the global Deck Selector.
-**Notes:** May overlap with the Deck Selector feature set below — consider
-whether this should be a standalone control or just consume the global
-selector state.
+- [x] Mana curve chart re-renders when decks are toggled in/out.
+- [x] Toggle state is shared with (or driven by) the global Deck Selector.
+**Notes:** Already satisfied by the global `DeckSelector` (Blocks 3/4) —
+toggling a deck calls `handleDeckToggle`, which refetches `/api/stats` and
+updates `statsData`, which `CurveHistogram` consumes directly. No standalone
+per-chart control needed; closing as-is.
 **Priority:** medium
-**Status:** idea
+**Status:** done
 
 ### Replace Archetype Fingerprint Chart with Card Type Composition
 
