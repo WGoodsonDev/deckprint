@@ -251,13 +251,15 @@ identity, commander (if applicable), and other relevant metadata.
 **Why:** Helps users identify decks at a glance without cross-referencing the
 source platform.
 **Acceptance criteria:**
-- [ ] Each deck entry displays color identity (e.g., color pips).
-- [ ] Commander decks display the commander's name.
-- [ ] Non-commander decks display equivalent relevant info (e.g., format).
-**Notes:** Depends on what data is already available in the normalized `Deck`
-type — check `/types/core.ts`.
+- [x] Each deck entry displays color identity (e.g., color pips).
+- [x] Commander decks display the commander's name.
+- [x] Non-commander decks display equivalent relevant info (e.g., format).
+**Notes:** New shared `ColorIdentityPips` component (also exports
+`SINGLE_COLOR_HEX`, now reused by `ColorPieChart`) renders ordered color
+pips from `Deck.colorIdentity`. Every card shows format + card count;
+Commander decks additionally show `commanders[].name`.
 **Priority:** medium
-**Status:** idea
+**Status:** done
 
 ### Card/Button Layout for Deck Selector
 
@@ -266,12 +268,15 @@ button-based layout.
 **Why:** More visually engaging and better suited to displaying enriched
 per-deck info (color identity, commander, etc.).
 **Acceptance criteria:**
-- [ ] Decks render as individual cards/buttons rather than table rows.
-- [ ] Layout remains usable/responsive for users with large numbers of decks.
-**Notes:** Likely implemented together with Enriched Deck Display and Deck
-Filtering Controls.
+- [x] Decks render as individual cards/buttons rather than table rows.
+- [x] Layout remains usable/responsive for users with large numbers of decks.
+**Notes:** Implemented together with Enriched Deck Display, as anticipated.
+Responsive grid (1/2/3 columns); each card is a toggle button with
+`aria-pressed`, fading excluded decks via opacity. Verified against
+`Bud_McChud` (12 decks, all formats/commander combos) — toggling updates the
+included count and re-aggregation as before.
 **Priority:** medium
-**Status:** idea
+**Status:** done
 
 ### Move Deck Selector to Top of Page
 

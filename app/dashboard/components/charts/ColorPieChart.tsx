@@ -10,21 +10,13 @@ import {
 } from 'recharts';
 import type { ColorProfile } from '@/types/stats';
 import type { Color } from '@/types/core';
+import { SINGLE_COLOR_HEX } from '../ColorIdentityPips';
 
 interface ColorPieChartProps {
   data: ColorProfile | null;
   isLoading: boolean;
   error: string | null;
 }
-
-const SINGLE_COLOR_HEX: Record<Color, string> = {
-  W: '#d4c060',
-  U: '#1472b8',
-  B: '#3c3c3c',
-  R: '#e05030',
-  G: '#18a060',
-  C: '#a8a8a8',
-};
 
 const STRIPE_SIZE = 8;
 

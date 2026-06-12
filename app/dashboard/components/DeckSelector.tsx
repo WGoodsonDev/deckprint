@@ -1,6 +1,7 @@
 'use client';
 
 import type { Deck } from '@/types/core';
+import { ColorIdentityPips } from './ColorIdentityPips';
 
 interface DeckSelectorProps {
   decks: Deck[];
@@ -22,7 +23,7 @@ export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: Dec
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-zinc-500">
           {includedCount} of {decks.length} deck{decks.length !== 1 ? 's' : ''} included
           {isRefetching && (
@@ -30,30 +31,40 @@ export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: Dec
           )}
         </p>
       </div>
-      <ul className="space-y-1.5">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {decks.map((deck) => {
           const included = includedIds.has(deck.id);
           return (
-            <li key={deck.id}>
-              <label className="flex cursor-pointer items-center gap-3 rounded-md border border-zinc-200 px-3 py-2 hover:bg-zinc-50">
-                <input
-                  type="checkbox"
-                  checked={included}
-                  disabled={isRefetching}
-                  onChange={() => onToggle(deck.id)}
-                  className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
-                />
-                <span className={`flex-1 text-sm font-medium ${included ? 'text-zinc-900' : 'text-zinc-400'}`}>
+            <button
+              key={deck.id}
+              type="button"
+              aria-pressed={included}
+              disabled={isRefetching}
+              onClick={() => onToggle(deck.id)}
+              className={`flex flex-col gap-1.5 rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                included
+                  ? 'border-indigo-200 bg-indigo-50 hover:bg-indigo-100'
+                  : 'border-zinc-200 bg-white opacity-60 hover:opacity-100'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className={`text-sm font-medium ${included ? 'text-zinc-900' : 'text-zinc-500'}`}>
                   {deck.name}
                 </span>
-                <span className="text-xs text-zinc-400">
-                  {formatLabel(deck.format)} · {deck.cardCount} cards
-                </span>
-              </label>
-            </li>
+                <ColorIdentityPips colorIdentity={deck.colorIdentity} />
+              </div>
+              <p className="text-xs text-zinc-400">
+                {formatLabel(deck.format)} · {deck.cardCount} cards
+              </p>
+              {deck.commanders.length > 0 && (
+                <p className="truncate text-xs text-zinc-500">
+                  {deck.commanders.map((commander) => commander.name).join(' / ')}
+                </p>
+              )}
+            </button>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }
