@@ -41,23 +41,30 @@ export function FormatBreakdown({ data, isLoading, error }: FormatBreakdownProps
   return (
     <div>
       {data && (
-        <p className="text-xs text-zinc-500 mb-1">
+        <p className="text-xs text-zinc-500 mb-1 dark:text-zinc-400">
           Primary format:{' '}
-          <span className="font-semibold text-zinc-700">{capitalizeFormat(data.primaryFormat)}</span>
+          <span className="font-semibold text-zinc-700 dark:text-zinc-200">{capitalizeFormat(data.primaryFormat)}</span>
         </p>
       )}
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 192 }}>
           <BarChart data={chartData} margin={{ top: 0, right: 8, bottom: 0, left: -16 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
-            <XAxis dataKey="format" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-            <Tooltip formatter={(value) => [value ?? '', 'Decks']} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+            <XAxis dataKey="format" tick={{ fontSize: 11, fill: 'var(--chart-axis-text)' }} />
+            <YAxis tick={{ fontSize: 12, fill: 'var(--chart-axis-text)' }} allowDecimals={false} />
+            <Tooltip
+              formatter={(value) => [value ?? '', 'Decks']}
+              contentStyle={{
+                backgroundColor: 'var(--chart-tooltip-bg)',
+                borderColor: 'var(--chart-tooltip-border)',
+                color: 'var(--chart-tooltip-text)',
+              }}
+            />
             <Bar dataKey="count" radius={[3, 3, 0, 0]}>
               {chartData.map((entry) => (
                 <Cell
                   key={entry.format}
-                  fill={entry.isPrimary ? '#6366f1' : '#a5b4fc'}
+                  fill={entry.isPrimary ? 'var(--chart-bar-primary)' : 'var(--chart-bar-secondary)'}
                 />
               ))}
             </Bar>
@@ -70,7 +77,7 @@ export function FormatBreakdown({ data, isLoading, error }: FormatBreakdownProps
 
 function ChartShell({ label, isError }: { label: string; isError?: boolean }) {
   return (
-    <div className={`flex h-56 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400'}`}>
+    <div className={`flex h-56 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
       {label}
     </div>
   );

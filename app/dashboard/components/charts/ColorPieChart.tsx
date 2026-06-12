@@ -110,11 +110,17 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
               const count = typeof value === 'number' ? value : 0;
               return [`${count} deck${count !== 1 ? 's' : ''}`, formatIdentityLabel(item.payload.name)];
             }}
+            contentStyle={{
+              backgroundColor: 'var(--chart-tooltip-bg)',
+              borderColor: 'var(--chart-tooltip-border)',
+              color: 'var(--chart-tooltip-text)',
+            }}
           />
           <Legend
             layout="vertical"
             verticalAlign="middle"
             align="right"
+            wrapperStyle={{ color: 'var(--chart-axis-text)' }}
             formatter={(value) => {
               const percent = percentByIdentity.get(String(value)) ?? 0;
               return `${formatIdentityLabel(String(value))} ${percent.toFixed(0)}%`;
@@ -128,7 +134,7 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
 
 function ChartShell({ label, isError }: { label: string; isError?: boolean }) {
   return (
-    <div className={`flex h-64 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400'}`}>
+    <div className={`flex h-64 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
       {label}
     </div>
   );

@@ -7,6 +7,7 @@ import { buildStatsUrl } from '@/lib/buildStatsUrl';
 import { UsernameForm } from './components/UsernameForm';
 import { DeckSelector } from './components/DeckSelector';
 import { SourceErrorBanner } from './components/SourceErrorBanner';
+import { ThemeToggle } from './components/ThemeToggle';
 import { ColorPieChart } from './components/charts/ColorPieChart';
 import { CurveHistogram } from './components/charts/CurveHistogram';
 import { FormatBreakdown } from './components/charts/FormatBreakdown';
@@ -111,13 +112,16 @@ export default function DashboardPage() {
   const sourceErrors = statsData?.sourceErrors ?? profileData?.sourceErrors ?? [];
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Deckprint</h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Your Magic: The Gathering deckbuilder profile
-          </p>
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight dark:text-zinc-50">Deckprint</h1>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              Your Magic: The Gathering deckbuilder profile
+            </p>
+          </div>
+          <ThemeToggle />
         </header>
 
         <div className="mb-8">
@@ -125,7 +129,7 @@ export default function DashboardPage() {
         </div>
 
         {phase === 'error' && fetchError && (
-          <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
             {fetchError}
           </div>
         )}
@@ -204,7 +208,7 @@ export default function DashboardPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-zinc-800 mb-3">{title}</h2>
+      <h2 className="text-lg font-semibold text-zinc-800 mb-3 dark:text-zinc-100">{title}</h2>
       {children}
     </section>
   );
@@ -212,8 +216,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-zinc-700 mb-3">{title}</h3>
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <h3 className="text-sm font-semibold text-zinc-700 mb-3 dark:text-zinc-200">{title}</h3>
       {children}
     </div>
   );

@@ -317,9 +317,22 @@ position reads better.
 **What:** Add a dark mode and corresponding toggle to the UI.
 **Why:** Lets users switch between bright and dark layout themes according to their preference.
 **Acceptance criteria:**
-- [ ] Dark mode selector correctly and quickly switches themes
-- [ ] Theme persists on reload
-**Notes:** Need to think about exactly where on page selector lives. May also need to modify colors in visualizations according to theme.
+- [x] Dark mode selector correctly and quickly switches themes
+- [x] Theme persists on reload
+**Notes:** Implemented via Tailwind v4's `@custom-variant dark (&:where(.dark, .dark *))`
+in `app/globals.css`, toggled by a new `ThemeToggle.tsx` in the dashboard
+header that adds/removes a `dark` class on `<html>` and persists the choice
+to `localStorage`. An inline script in `app/layout.tsx`'s `<head>` applies
+the stored theme (or `prefers-color-scheme` if unset) before paint to avoid a
+flash of the wrong theme. All dashboard components, the username form, error
+banners, deck selector/filters, and chart components got `dark:` variants.
+Chart-specific colors (grid lines, axis text, tooltip background, bar fills)
+use new CSS custom properties (`--chart-grid`, `--chart-axis-text`,
+`--chart-tooltip-*`, `--chart-bar-primary/secondary`) defined for both themes
+in `globals.css` and referenced via `var(...)` in Recharts props. Per Warren's
+decision, `SINGLE_COLOR_HEX` mana-color swatches in `ColorIdentityPips.tsx`
+stay constant across themes (only their ring color gets a dark variant) since
+they represent MTG card colors, not UI chrome.
 **Priority:** high
-**Status:** idea
+**Status:** done
 </content>

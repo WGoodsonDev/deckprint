@@ -36,10 +36,10 @@ export function UsernameForm({ onSubmit, isLoading }: UsernameFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
       <fieldset className="flex flex-col gap-1">
-        <legend className="text-sm font-medium text-zinc-700">Platform</legend>
+        <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Platform</legend>
         <div className="flex gap-4 py-2">
           {PLATFORM_OPTIONS.map((option) => (
-            <label key={option.value} className="flex items-center gap-1.5 text-sm text-zinc-700">
+            <label key={option.value} className="flex items-center gap-1.5 text-sm text-zinc-700 dark:text-zinc-300">
               <input
                 type="radio"
                 name="platform"
@@ -57,7 +57,7 @@ export function UsernameForm({ onSubmit, isLoading }: UsernameFormProps) {
 
       {platform !== 'archidekt' && (
         <div className="flex flex-col gap-1">
-          <label htmlFor="moxfield-input" className="text-sm font-medium text-zinc-700">
+          <label htmlFor="moxfield-input" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Moxfield username
           </label>
           <input
@@ -67,14 +67,14 @@ export function UsernameForm({ onSubmit, isLoading }: UsernameFormProps) {
             onChange={(e) => setMoxfield(e.target.value)}
             placeholder="e.g. tehgoyf"
             disabled={isLoading}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
           />
         </div>
       )}
 
       {platform !== 'moxfield' && (
         <div className="flex flex-col gap-1">
-          <label htmlFor="archidekt-input" className="text-sm font-medium text-zinc-700">
+          <label htmlFor="archidekt-input" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Archidekt username
           </label>
           <input
@@ -84,14 +84,14 @@ export function UsernameForm({ onSubmit, isLoading }: UsernameFormProps) {
             onChange={(e) => setArchidekt(e.target.value)}
             placeholder="e.g. saffronolive"
             disabled={isLoading}
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
           />
         </div>
       )}
 
       <div className="flex flex-col gap-1 sm:pb-0">
         {validationError && (
-          <p className="text-sm text-red-600">{validationError}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">{validationError}</p>
         )}
         <button
           type="submit"

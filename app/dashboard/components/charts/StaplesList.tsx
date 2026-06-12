@@ -25,13 +25,13 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
     <div className="space-y-6">
       {data.staples.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-zinc-700 mb-2">
+          <h3 className="text-sm font-semibold text-zinc-700 mb-2 dark:text-zinc-200">
             Staples — in multiple decks
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 text-left text-zinc-500">
+                <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                   <th className="pb-1 pr-4 font-medium">Card</th>
                   <th className="pb-1 pr-4 font-medium text-right">Decks</th>
                   <th className="pb-1 font-medium text-right">Copies</th>
@@ -39,17 +39,17 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
               </thead>
               <tbody>
                 {data.staples.slice(0, 20).map((staple) => (
-                  <tr key={staple.scryfallId} className="border-b border-zinc-100 last:border-0">
-                    <td className="py-1.5 pr-4 font-medium text-zinc-900">{staple.name}</td>
-                    <td className="py-1.5 pr-4 text-right text-zinc-600">{staple.deckCount}</td>
-                    <td className="py-1.5 text-right text-zinc-600">{staple.totalCopies}</td>
+                  <tr key={staple.scryfallId} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                    <td className="py-1.5 pr-4 font-medium text-zinc-900 dark:text-zinc-100">{staple.name}</td>
+                    <td className="py-1.5 pr-4 text-right text-zinc-600 dark:text-zinc-400">{staple.deckCount}</td>
+                    <td className="py-1.5 text-right text-zinc-600 dark:text-zinc-400">{staple.totalCopies}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           {data.staples.length > 20 && (
-            <p className="mt-1 text-xs text-zinc-400">
+            <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
               Showing top 20 of {data.staples.length}
             </p>
           )}
@@ -58,20 +58,20 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
 
       {data.petCards.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-zinc-700 mb-2">
+          <h3 className="text-sm font-semibold text-zinc-700 mb-2 dark:text-zinc-200">
             Pet cards — appear in only one deck
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {data.petCards.slice(0, 30).map((card) => (
               <span
                 key={card.scryfallId}
-                className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700"
+                className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
               >
                 {card.name}
               </span>
             ))}
             {data.petCards.length > 30 && (
-              <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
+              <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
                 +{data.petCards.length - 30} more
               </span>
             )}
@@ -84,7 +84,7 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
 
 function ChartPlaceholder({ label, isError }: { label: string; isError?: boolean }) {
   return (
-    <div className={`flex h-24 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400'}`}>
+    <div className={`flex h-24 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
       {label}
     </div>
   );

@@ -37,24 +37,29 @@ export function ArchetypeRadar({ data, isLoading, error }: ArchetypeRadarProps) 
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 224 }}>
         <RadarChart data={chartData}>
-          <PolarGrid stroke="#e4e4e7" />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
+          <PolarGrid stroke="var(--chart-grid)" />
+          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: 'var(--chart-axis-text)' }} />
           <PolarRadiusAxis
             angle={90}
             domain={[0, 1]}
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
             tickCount={3}
           />
           <Radar
             dataKey="score"
-            stroke="#6366f1"
-            fill="#6366f1"
+            stroke="var(--chart-bar-primary)"
+            fill="var(--chart-bar-primary)"
             fillOpacity={0.35}
           />
           <Tooltip
             formatter={(value) => {
               const score = typeof value === 'number' ? value : 0;
               return [score.toFixed(2), 'Score'];
+            }}
+            contentStyle={{
+              backgroundColor: 'var(--chart-tooltip-bg)',
+              borderColor: 'var(--chart-tooltip-border)',
+              color: 'var(--chart-tooltip-text)',
             }}
           />
         </RadarChart>
@@ -65,7 +70,7 @@ export function ArchetypeRadar({ data, isLoading, error }: ArchetypeRadarProps) 
 
 function ChartShell({ label, isError }: { label: string; isError?: boolean }) {
   return (
-    <div className={`flex h-56 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400'}`}>
+    <div className={`flex h-56 items-center justify-center text-sm ${isError ? 'text-red-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
       {label}
     </div>
   );

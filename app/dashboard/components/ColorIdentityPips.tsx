@@ -33,7 +33,7 @@ export function ColorIdentityPips({ colorIdentity }: ColorIdentityPipsProps) {
       {ordered.map((color) => (
         <span
           key={color}
-          className="inline-block h-3 w-3 rounded-full ring-1 ring-zinc-300"
+          className="inline-block h-3 w-3 rounded-full ring-1 ring-zinc-300 dark:ring-zinc-600"
           style={{ backgroundColor: SINGLE_COLOR_HEX[color] }}
           title={color}
         />
