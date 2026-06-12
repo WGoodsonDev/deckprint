@@ -136,6 +136,17 @@ export default function DashboardPage() {
               <SourceErrorBanner errors={sourceErrors} />
             )}
 
+            {profileData && (
+              <Section title="Your Decks">
+                <DeckSelector
+                  decks={profileData.decks}
+                  includedIds={includedDeckIds}
+                  isRefetching={isStatsRefetching}
+                  onToggle={handleDeckToggle}
+                />
+              </Section>
+            )}
+
             <Section title="Identity">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <Card title="Color Identity">
@@ -183,17 +194,6 @@ export default function DashboardPage() {
                 />
               </Card>
             </Section>
-
-            {profileData && (
-              <Section title="Your Decks">
-                <DeckSelector
-                  decks={profileData.decks}
-                  includedIds={includedDeckIds}
-                  isRefetching={isStatsRefetching}
-                  onToggle={handleDeckToggle}
-                />
-              </Section>
-            )}
           </div>
         )}
       </div>

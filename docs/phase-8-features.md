@@ -284,13 +284,16 @@ included count and re-aggregation as before.
 **Why:** Lets users change which decks are included without scrolling back
 and forth between the selector and the charts.
 **Acceptance criteria:**
-- [ ] Deck selector renders above the chart sections in the dashboard layout.
-- [ ] Selector remains usable/visible without excessive scrolling on smaller
+- [x] Deck selector renders above the chart sections in the dashboard layout.
+- [x] Selector remains usable/visible without excessive scrolling on smaller
   viewports (consider sticky positioning).
-**Notes:** May affect overall page layout/scroll behavior — coordinate with
-other dashboard layout changes.
+**Notes:** Moved the "Your Decks" section to directly below the username
+form/source error banner, before "Identity". Sticky positioning was
+considered but not used — the 12-deck card grid is tall enough that pinning
+it would eat most of the viewport on smaller screens; a normal scroll
+position reads better.
 **Priority:** medium
-**Status:** idea
+**Status:** done
 
 ---
 
