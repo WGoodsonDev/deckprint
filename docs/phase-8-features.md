@@ -1,7 +1,11 @@
 # Phase 8 — Dashboard UI: Feature List
 
 **Phase ref:** `ROADMAP.md` §Phase 8  
-**Status:** 🔄 In Progress
+**Status:** 🔄 In Progress — core dashboard shipped, additional UI feature
+passes planned before moving to Phase 9. 3 low/medium-priority items remain
+`specced` (see "Rethink Format Breakdown Visualization", "Reconsider Pet
+Cards Section", "Replace Archetype Fingerprint Chart with Card Type
+Composition")
 
 Add feature ideas under the relevant section. Use the template below.
 Acceptance criteria are the contract — if a criterion can't be tested,

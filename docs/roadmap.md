@@ -20,8 +20,10 @@ standards, layer rules, and architecture, see `CLAUDE.md`.
 
 ## Current Status
 
-**Active phase:** Phase 8 — Dashboard UI 🔄
+**Active phase:** Phase 8 — Dashboard UI 🔄 (additional UI feature passes
+planned before moving to Phase 9, see `/docs/phase-8-features.md`)
 **Tests passing (start of Phase 8):** 129
+**Tests passing (current):** 136
 **Known blocker:** Moxfield blocked by Cloudflare WAF (403/auth_required).
 Archidekt fully operational. See `/docs/api-reference.md`.
 
@@ -351,13 +353,23 @@ showing Archidekt decks only").
   `ProfileStats` as props.
 
 ### Verification Checklist
-- [ ] Every chart handles loading / error / empty states
-- [ ] No aggregation logic in any component or API route
-- [ ] Deck selector correctly toggles `includedInProfile` and triggers
+- [x] Every chart handles loading / error / empty states
+- [x] No aggregation logic in any component or API route
+- [x] Deck selector correctly toggles `includedInProfile` and triggers
       re-aggregation
-- [ ] `SourceErrorBanner` appears when `sourceErrors` is present
-- [ ] Full end-to-end test with a real Archidekt username
-- [ ] `npx tsc --noEmit` — no TypeScript errors
+- [x] `SourceErrorBanner` appears when `sourceErrors` is present
+- [x] Full end-to-end test with a real Archidekt username (Archidekt
+      `Bud_McChud`, 12 decks, verified repeatedly via Playwright)
+- [x] `npx tsc --noEmit` — no TypeScript errors
+
+### Follow-up work
+A post-ship follow-up pass (deck filtering, dark mode, deck selector
+redesign, multicolor identity chart, platform input, etc.) was completed
+across several blocks — see `/docs/phase-8-features.md` for the full list
+and `docs/handoff.md` for session-by-session notes. Three low/medium
+priority items remain `specced` but unimplemented in
+`/docs/phase-8-features.md`; pick those up as a future
+session/PR when prioritized.
 
 ---
 
