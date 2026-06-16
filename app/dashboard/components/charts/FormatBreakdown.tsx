@@ -18,6 +18,8 @@ interface FormatBreakdownProps {
   error: string | null;
 }
 
+const PRIMARY_FORMAT_THRESHOLD = 0.8;
+
 function capitalizeFormat(format: string): string {
   return format.charAt(0).toUpperCase() + format.slice(1);
 }
@@ -37,6 +39,23 @@ export function FormatBreakdown({ data, isLoading, error }: FormatBreakdownProps
       count: count ?? 0,
       isPrimary: format === data?.primaryFormat,
     }));
+
+  const totalDecks = chartData.reduce((sum, e) => sum + e.count, 0);
+  const primaryCount = data ? (data.formatCounts[data.primaryFormat] ?? 0) : 0;
+  const isDominant = totalDecks > 0 && primaryCount / totalDecks >= PRIMARY_FORMAT_THRESHOLD;
+
+  if (isDominant && data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-48 gap-2">
+        <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+          {capitalizeFormat(data.primaryFormat)}
+        </p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          {primaryCount} of {totalDecks} deck{totalDecks !== 1 ? 's' : ''} ({Math.round((primaryCount / totalDecks) * 100)}%)
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
