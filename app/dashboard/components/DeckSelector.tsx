@@ -10,6 +10,9 @@ interface DeckSelectorProps {
   includedIds: Set<string>;
   isRefetching: boolean;
   onToggle: (deckId: string) => void;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  onSelectionChange: (ids: Set<string>) => void;
 }
 
 function formatLabel(format: string): string {
@@ -32,8 +35,14 @@ function matchesFilters(deck: Deck, filters: DeckFiltersState): boolean {
   return true;
 }
 
-export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: DeckSelectorProps) {
+export function DeckSelector({ decks, includedIds, isRefetching, onToggle, onSelectAll, onDeselectAll, onSelectionChange }: DeckSelectorProps) {
   const [filters, setFilters] = useState<DeckFiltersState>(DEFAULT_DECK_FILTERS);
+
+  const handleFilterChange = (newFilters: DeckFiltersState) => {
+    setFilters(newFilters);
+    const matchingDecks = decks.filter((deck) => matchesFilters(deck, newFilters));
+    onSelectionChange(new Set(matchingDecks.map((deck) => deck.id)));
+  };
 
   const availableFormats = useMemo(() => {
     const formats = new Set<Format>(decks.map((deck) => deck.format));
@@ -53,7 +62,7 @@ export function DeckSelector({ decks, includedIds, isRefetching, onToggle }: Dec
 
   return (
     <div>
-      <DeckFilters availableFormats={availableFormats} filters={filters} onChange={setFilters} />
+      <DeckFilters availableFormats={availableFormats} filters={filters} onChange={handleFilterChange} onSelectAll={onSelectAll} onDeselectAll={onDeselectAll} />
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           {includedCount} of {decks.length} deck{decks.length !== 1 ? 's' : ''} included

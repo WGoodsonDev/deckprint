@@ -11,7 +11,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { ColorPieChart } from './components/charts/ColorPieChart';
 import { CurveHistogram } from './components/charts/CurveHistogram';
 import { FormatBreakdown } from './components/charts/FormatBreakdown';
-import { ArchetypeRadar } from './components/charts/ArchetypeRadar';
+import { CardTypeComposition } from './components/charts/CardTypeComposition';
 import { StaplesList } from './components/charts/StaplesList';
 
 type PagePhase = 'idle' | 'loading' | 'loaded' | 'error';
@@ -75,6 +75,32 @@ export default function DashboardPage() {
       setFetchError('Network error. Please check your connection and try again.');
       setPhase('error');
     }
+  };
+
+  const handleSelectionChange = async (ids: Set<string>) => {
+    if (!activeQuery || !profileData || isStatsRefetching) return;
+    setIncludedDeckIds(ids);
+    if (ids.size === 0) return;
+    setIsStatsRefetching(true);
+    try {
+      const url = buildStatsUrl(activeQuery.moxfield, activeQuery.archidekt, ids, profileData.decks.length);
+      const res = await fetch(url);
+      if (res.ok) {
+        const stats: ProfileStats = await res.json();
+        setStatsData(stats);
+      }
+    } finally {
+      setIsStatsRefetching(false);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (!profileData) return;
+    handleSelectionChange(new Set(profileData.decks.map((d) => d.id)));
+  };
+
+  const handleDeselectAll = () => {
+    setIncludedDeckIds(new Set());
   };
 
   const handleDeckToggle = async (deckId: string) => {
@@ -147,6 +173,9 @@ export default function DashboardPage() {
                   includedIds={includedDeckIds}
                   isRefetching={isStatsRefetching}
                   onToggle={handleDeckToggle}
+                  onSelectAll={handleSelectAll}
+                  onDeselectAll={handleDeselectAll}
+                  onSelectionChange={handleSelectionChange}
                 />
               </Section>
             )}
@@ -179,9 +208,9 @@ export default function DashboardPage() {
                     error={null}
                   />
                 </Card>
-                <Card title="Archetype Fingerprint">
-                  <ArchetypeRadar
-                    data={statsData?.archetypeProfile ?? null}
+                <Card title="Card Type Composition">
+                  <CardTypeComposition
+                    data={statsData?.cardTypeProfile ?? null}
                     isLoading={false}
                     error={null}
                   />

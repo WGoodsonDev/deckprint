@@ -36,9 +36,11 @@ interface DeckFiltersProps {
   availableFormats: Format[];
   filters: DeckFiltersState;
   onChange: (filters: DeckFiltersState) => void;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
 }
 
-export function DeckFilters({ availableFormats, filters, onChange }: DeckFiltersProps) {
+export function DeckFilters({ availableFormats, filters, onChange, onSelectAll, onDeselectAll }: DeckFiltersProps) {
   const toggleColor = (color: Color) => {
     const colors = filters.colors.includes(color)
       ? filters.colors.filter((existing) => existing !== color)
@@ -114,15 +116,31 @@ export function DeckFilters({ availableFormats, filters, onChange }: DeckFilters
         </div>
       </div>
 
-      {isDeckFiltersActive(filters) && (
+      <div className="flex items-end gap-2 ml-auto">
         <button
           type="button"
-          onClick={() => onChange(DEFAULT_DECK_FILTERS)}
+          onClick={onSelectAll}
           className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
         >
-          Clear filters
+          Select all
         </button>
-      )}
+        <button
+          type="button"
+          onClick={onDeselectAll}
+          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+        >
+          Deselect all
+        </button>
+        {isDeckFiltersActive(filters) && (
+          <button
+            type="button"
+            onClick={() => onChange(DEFAULT_DECK_FILTERS)}
+            className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
     </div>
   );
 }
