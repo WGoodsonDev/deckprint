@@ -10,7 +10,7 @@ import { SourceErrorBanner } from './components/SourceErrorBanner';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ColorPieChart } from './components/charts/ColorPieChart';
 import { CurveHistogram } from './components/charts/CurveHistogram';
-import { FormatBreakdown } from './components/charts/FormatBreakdown';
+import { RecencyDistribution } from './components/charts/RecencyDistribution';
 import { CardTypeComposition } from './components/charts/CardTypeComposition';
 import { StaplesList } from './components/charts/StaplesList';
 
@@ -160,6 +160,33 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {phase === 'loading' && (
+          <div className="space-y-8">
+            <Section title="Your Decks">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonBlock key={i} className="h-24 rounded-lg" />
+                ))}
+              </div>
+            </Section>
+            <Section title="Identity">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <Card title="Color Identity"><SkeletonBlock className="h-52" /></Card>
+                <Card title="Deck Recency"><SkeletonBlock className="h-52" /></Card>
+              </div>
+            </Section>
+            <Section title="Playing Habits">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <Card title="Mana Curve"><SkeletonBlock className="h-52" /></Card>
+                <Card title="Card Type Composition"><SkeletonBlock className="h-52" /></Card>
+              </div>
+            </Section>
+            <Section title="Collection">
+              <Card title="Cards Across Decks"><SkeletonBlock className="h-40" /></Card>
+            </Section>
+          </div>
+        )}
+
         {phase === 'loaded' && (
           <div className="space-y-8">
             {sourceErrors.length > 0 && (
@@ -180,53 +207,57 @@ export default function DashboardPage() {
               </Section>
             )}
 
-            <Section title="Identity">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Card title="Color Identity">
-                  <ColorPieChart
-                    data={statsData?.colorProfile ?? null}
-                    isLoading={false}
-                    error={null}
-                  />
-                </Card>
-                <Card title="Format Breakdown">
-                  <FormatBreakdown
-                    data={statsData?.formatProfile ?? null}
-                    isLoading={false}
-                    error={null}
-                  />
-                </Card>
-              </div>
-            </Section>
+            <div className={isStatsRefetching ? 'opacity-50 transition-opacity duration-200 pointer-events-none' : 'transition-opacity duration-200'}>
+              <div className="space-y-8">
+                <Section title="Identity">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <Card title="Color Identity">
+                      <ColorPieChart
+                        data={statsData?.colorProfile ?? null}
+                        isLoading={false}
+                        error={null}
+                      />
+                    </Card>
+                    <Card title="Deck Recency">
+                      <RecencyDistribution
+                        data={statsData?.recencyProfile ?? null}
+                        isLoading={false}
+                        error={null}
+                      />
+                    </Card>
+                  </div>
+                </Section>
 
-            <Section title="Playing Habits">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Card title="Mana Curve">
-                  <CurveHistogram
-                    data={statsData?.curveProfile ?? null}
-                    isLoading={false}
-                    error={null}
-                  />
-                </Card>
-                <Card title="Card Type Composition">
-                  <CardTypeComposition
-                    data={statsData?.cardTypeProfile ?? null}
-                    isLoading={false}
-                    error={null}
-                  />
-                </Card>
-              </div>
-            </Section>
+                <Section title="Playing Habits">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <Card title="Mana Curve">
+                      <CurveHistogram
+                        data={statsData?.curveProfile ?? null}
+                        isLoading={false}
+                        error={null}
+                      />
+                    </Card>
+                    <Card title="Card Type Composition">
+                      <CardTypeComposition
+                        data={statsData?.cardTypeProfile ?? null}
+                        isLoading={false}
+                        error={null}
+                      />
+                    </Card>
+                  </div>
+                </Section>
 
-            <Section title="Collection">
-              <Card title="Cards Across Decks">
-                <StaplesList
-                  data={statsData?.cardOverlap ?? null}
-                  isLoading={false}
-                  error={null}
-                />
-              </Card>
-            </Section>
+                <Section title="Collection">
+                  <Card title="Cards Across Decks">
+                    <StaplesList
+                      data={statsData?.cardOverlap ?? null}
+                      isLoading={false}
+                      error={null}
+                    />
+                  </Card>
+                </Section>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -250,4 +281,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       {children}
     </div>
   );
+}
+
+function SkeletonBlock({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-zinc-200 dark:bg-zinc-800 ${className}`} />;
 }
