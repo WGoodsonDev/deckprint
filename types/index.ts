@@ -13,7 +13,7 @@ export type {
   ProfileStats,
   ColorProfile,
   CurveProfile,
-  FormatProfile,
+  RecencyProfile,
   CardOverlapProfile,
   StapleEntry,
   CardTypeProfile,

@@ -2,6 +2,7 @@ import type { Deck } from '@/types/core';
 import type { CardOverlapProfile, StapleEntry } from '@/types/stats';
 
 const STAPLE_THRESHOLD = 3;
+const BASIC_LAND_SUPERTYPE = 'Basic';
 
 type CardAccumulator = {
   name: string;
@@ -20,6 +21,7 @@ export const computeCardOverlap = (decks: Deck[]): CardOverlapProfile => {
     const relevantCards = [...deck.mainboard, ...deck.commanders];
 
     for (const card of relevantCards) {
+      if (card.superTypes.includes(BASIC_LAND_SUPERTYPE)) continue;
       const existing = cardData.get(card.scryfallId);
       if (existing) {
         existing.deckIds.add(deck.id);
