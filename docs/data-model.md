@@ -71,8 +71,10 @@ interface Deck {
   cardCount: number;           // Total mainboard card count
   uniqueCardCount: number;     // Distinct card names in mainboard
 
-  // Inclusion
-  includedInProfile: boolean;  // Whether this deck is active in the current profile
+  // Inclusion — always true as returned by the server; deck filtering is
+  // applied at the API route level via the ?include= query param, not by
+  // toggling this field.
+  includedInProfile: boolean;
 
   // Timestamps
   createdAt: string;           // ISO 8601
@@ -85,15 +87,23 @@ Represents a user's full cross-platform deck collection as loaded into the app.
 
 ```typescript
 interface UserProfile {
-  sources: PlatformSource[];   // One entry per connected platform username
-  decks: Deck[];               // All fetched decks, across all platforms
-  fetchedAt: string;           // ISO 8601 — when this profile was last fetched
+  sources: PlatformSource[];      // One entry per connected platform username
+  sourceErrors?: SourceError[];   // Present only when one or more platforms failed
+  decks: Deck[];                  // All fetched decks, across all platforms
+  fetchedAt: string;              // ISO 8601 — when this profile was last fetched
 }
 
 interface PlatformSource {
   platform: Platform;
   username: string;
   deckCount: number;
+}
+
+interface SourceError {
+  platform: Platform;
+  username: string;
+  reason: FetchErrorReason;
+  message: string;
 }
 ```
 
@@ -140,9 +150,10 @@ These are the types that aggregators return and the dashboard consumes.
 interface ProfileStats {
   colorProfile: ColorProfile;
   curveProfile: CurveProfile;
-  formatProfile: FormatProfile;
+  recencyProfile: RecencyProfile;
   cardOverlap: CardOverlapProfile;
-  archetypeProfile: ArchetypeProfile;
+  cardTypeProfile: CardTypeProfile;
+  sourceErrors?: SourceError[];   // Passed through from the API route, not produced by aggregators
 }
 
 interface ColorProfile {
@@ -159,16 +170,18 @@ interface CurveProfile {
   overallAverageCmc: number;
 }
 
-interface FormatProfile {
-  formatCounts: Record<Format, number>;
-  primaryFormat: Format;         // Most common format across decks
+interface RecencyProfile {
+  // Deck counts by age bucket, based on updatedAt
+  within30Days: number;
+  within90Days: number;
+  within365Days: number;
+  olderThan365Days: number;
+  mostRecentDeck: { name: string; updatedAt: string } | null;
 }
 
 interface CardOverlapProfile {
-  // Cards appearing in more than one deck
+  // Cards appearing in 3+ decks, sorted by deckCount descending
   staples: StapleEntry[];
-  // Cards appearing in exactly one deck
-  petCards: CardEntry[];
 }
 
 interface StapleEntry {
@@ -178,12 +191,10 @@ interface StapleEntry {
   totalCopies: number;           // Sum of quantity across all decks
 }
 
-interface ArchetypeProfile {
-  // Rough breakdown inferred from curve + card type density
-  aggro: number;                 // 0–1 score
-  midrange: number;
-  control: number;
-  combo: number;
+interface CardTypeProfile {
+  // Average count per CardType across all included decks (per-deck-then-average)
+  // Primary type only: card.cardTypes[0], or 'Other' if cardTypes is empty
+  averageByType: Record<CardType, number>;
 }
 ```
 
@@ -194,10 +205,11 @@ interface ArchetypeProfile {
 - **Scryfall as the canonical source:** `scryfallId` is the cross-platform
   identifier of record. Both Moxfield and Archidekt expose Scryfall IDs.
   Normalizers must always resolve to this ID.
-- **`includedInProfile`** is managed by client state, not the server. The server
-  always returns all decks; the client filters by this flag before passing to
-  aggregators.
-- **`ArchetypeProfile` scores** are heuristic and approximate — they are
-  intended for display, not precision analysis.
+- **Deck filtering** is applied at the API route level via `?include=<id,id,...>`
+  on `/api/stats`. The `includedInProfile` field on `Deck` is always `true` as
+  returned by the server; it is not toggled by the client.
+- **Staple threshold** is 3+ decks (`STAPLE_THRESHOLD = 3` in `overlap.ts`).
+  Basic lands are excluded by supertype guard (`superTypes.includes('Basic')`),
+  which covers Snow-Covered basics and Wastes automatically.
 - **`Format` values** should be normalized to lowercase at normalization time.
   Unknown formats map to `'other'`.
