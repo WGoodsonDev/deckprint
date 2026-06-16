@@ -4,7 +4,7 @@ import { computeColorProfile } from './color';
 import { computeCurveProfile } from './curve';
 import { computeFormatProfile } from './format';
 import { computeCardOverlap } from './overlap';
-import { computeArchetypeProfile } from './archetype';
+import { computeCardTypeProfile } from './cardType';
 
 export function computeProfileStats(decks: Deck[]): ProfileStats {
   return {
@@ -12,6 +12,6 @@ export function computeProfileStats(decks: Deck[]): ProfileStats {
     curveProfile: computeCurveProfile(decks),
     formatProfile: computeFormatProfile(decks),
     cardOverlap: computeCardOverlap(decks),
-    archetypeProfile: computeArchetypeProfile(decks),
+    cardTypeProfile: computeCardTypeProfile(decks),
   };
 }

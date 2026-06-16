@@ -2,10 +2,7 @@
 
 **Phase ref:** `ROADMAP.md` §Phase 8  
 **Status:** 🔄 In Progress — core dashboard shipped, additional UI feature
-passes planned before moving to Phase 9. 3 low/medium-priority items remain
-`specced` (see "Rethink Format Breakdown Visualization", "Reconsider Pet
-Cards Section", "Replace Archetype Fingerprint Chart with Card Type
-Composition")
+passes planned before moving to Phase 9.
 
 Add feature ideas under the relevant section. Use the template below.
 Acceptance criteria are the contract — if a criterion can't be tested,
@@ -103,6 +100,54 @@ Archidekt profile (`Bud_McChud`, 10 distinct color identities) — no overlap.
 **Priority:** medium
 **Status:** done
 
+### Dynamic Legend for Color Identity Pie Chart
+
+**What:** Reflow the color identity legend into two columns when the number
+of distinct identities exceeds a threshold, preventing the legend from
+overflowing its containing card.
+**Why:** Users with many distinct color identities (13+) currently see legend
+entries overflow the card boundary, which looks broken and is hard to read.
+**Acceptance criteria:**
+- [x] When the number of distinct color identities exceeds the threshold
+  (`LEGEND_COLUMN_THRESHOLD = 10`), the legend renders in two columns.
+- [x] Below the threshold, the legend renders in a single column as before.
+- [x] Legend swatches correctly render striped SVG patterns for multicolor
+  identities (same fills as the pie slices).
+- [x] No legend entries overflow the card at any realistic deck count (up to
+  32 distinct identities possible).
+**Notes:** Replaced the Recharts `<Legend>` with a custom HTML legend rendered
+below the chart (outside `ResponsiveContainer`). Inline SVG rects reference
+the pattern IDs defined in the existing hidden `<svg><defs>` block, so
+striped fills work without extra wiring. The pie `cx` shifted to `"50%"` since
+it no longer shares horizontal space with a side legend. Implemented together
+with Color Name Toggle.
+**Priority:** medium
+**Status:** done
+
+### Color Name Toggle for Color Identity Chart
+
+**What:** Add a toggle button on the color identity card that switches legend
+and tooltip labels between color spellings (e.g. W/U/G) and community names
+(e.g. Bant).
+**Why:** Players familiar with MTG use color names fluently, but newer or
+more casual players may find the abbreviation-based spellings less readable.
+A toggle covers both audiences without cluttering the default view.
+**Acceptance criteria:**
+- [x] Toggle button appears below the legend on the color identity card.
+- [x] When active, legend entries and tooltip labels show the community name
+  (e.g. "Bant 25%") instead of the color spelling (e.g. "W/U/G 25%").
+- [x] Combinations without a canonical community name (e.g. novel
+  multi-color combos) fall back to the color spelling regardless of toggle
+  state.
+- [x] Toggle state is local to the component (no persistence required).
+**Notes:** Added `COLOR_COMBINATION_NAMES: Record<string, string>` at module
+level covering all named mono, guild (2-color), shard (3-color), wedge
+(3-color), 4-color (Nephilim), and 5-color combinations in WUBRG canonical
+order. `formatIdentityLabel` gained a second `useColorNames` param. Implemented
+together with Dynamic Legend (both affect the legend render).
+**Priority:** low
+**Status:** done
+
 ### Rethink Format Breakdown Visualization
 
 **What:** Make the format breakdown conditional: if one format dominates the
@@ -113,17 +158,17 @@ format (e.g., Commander), making the current chart visually uninteresting
 and low-value. A stat summary is more direct for that common case, while the
 bar chart still adds value when format distribution is genuinely mixed.
 **Acceptance criteria:**
-- [ ] If the primary format's share of included decks is >= 80%, render a
+- [x] If the primary format's share of included decks is >= 80%, render a
   stat-style summary (format name, deck count, percentage — e.g.
   "Commander: 8/10 decks (80%)") instead of the bar chart.
-- [ ] If no format reaches the 80% threshold, render the existing bar chart
+- [x] If no format reaches the 80% threshold, render the existing bar chart
   unchanged.
-- [ ] The 80% threshold is a named constant.
+- [x] The 80% threshold is a named constant (`PRIMARY_FORMAT_THRESHOLD`).
 **Notes:** Threshold may be revisited after seeing real multi-format data.
 Affects `FormatBreakdown.tsx` only — `formatProfile` aggregator output is
 unchanged.
 **Priority:** low
-**Status:** specced
+**Status:** done
 
 ---
 
@@ -142,22 +187,21 @@ meaningful or readable callout — removing it is simpler than redesigning a
 presentation that won't scale. The 2+ threshold for staples was also looser
 than originally intended; 3+ decks is a stronger signal of a "go-to" card.
 **Acceptance criteria:**
-- [ ] Pet cards list/section is removed from `StaplesList.tsx` and the
+- [x] Pet cards list/section is removed from `StaplesList.tsx` and the
   dashboard UI.
-- [ ] `/lib/aggregators/cardOverlap.ts` classifies a card as a staple only
-  when `deckCount >= 3` (currently `> 1`). Cards in exactly 2 decks are no
-  longer surfaced as staples or pet cards.
-- [ ] Check `/types/stats.ts` and existing tests for `petCards` usage before
-  deciding whether to remove the field from `CardOverlapProfile` entirely or
-  leave it computed-but-unused (CLAUDE.md "no dead code" — prefer full
-  removal if no other consumer exists, but flag the type change explicitly).
-- [ ] `/tests/aggregators/cardOverlap.test.ts` updated to cover the new 3+
-  threshold (a card in exactly 2 decks should appear in neither list).
-**Notes:** This is a type change to `CardOverlapProfile` if `petCards` is
-removed — note explicitly per CLAUDE.md `/types` rule. The threshold change
-is an aggregator behavior change requiring updated Vitest tests per CLAUDE.md.
+- [x] `/lib/aggregators/overlap.ts` classifies a card as a staple only
+  when `deckCount >= 3`. Cards in exactly 2 decks are no longer surfaced.
+- [x] `petCards: CardEntry[]` removed from `CardOverlapProfile` in
+  `/types/stats.ts` — no other consumers existed. `CardEntry` import also
+  removed. `/types/index.ts` updated to export `CardTypeProfile` instead of
+  the removed `ArchetypeProfile`.
+- [x] `/tests/aggregators/overlap.test.ts` updated — all `petCards`
+  assertions removed; new test confirms a card in exactly 2 decks is not a
+  staple.
+**Notes:** `/types/stats.ts` was modified (type change flagged per CLAUDE.md).
+`STAPLE_THRESHOLD = 3` is a named constant in `overlap.ts`.
 **Priority:** low
-**Status:** specced
+**Status:** done
 
 ---
 
@@ -209,25 +253,21 @@ low-signal. Card type composition is format-agnostic, shows real
 deck-building tendencies (creature-heavy vs. spell-heavy vs.
 control-shell-style decks), and works equally well for any format.
 **Acceptance criteria:**
-- [ ] New aggregator (e.g. `/lib/aggregators/cardTypeProfile.ts`) computes
-  the average count per `CardType` across included decks, following the same
-  per-deck-then-average pattern as `curveProfile.ts`.
-- [ ] New chart component (e.g. `CardTypeComposition.tsx`) renders the
-  breakdown (bar chart, consistent with existing chart styling).
-- [ ] `ArchetypeRadar.tsx` and `/lib/aggregators/archetypeProfile.ts` are
-  removed — first confirm no other consumers (check `/types/stats.ts`,
-  `computeProfileStats`, and existing tests).
-- [ ] `ArchetypeProfile` is removed from `/types/stats.ts` and replaced with
-  a new `CardTypeProfile` type — flag this `/types` change explicitly per
-  CLAUDE.md.
-- [ ] New aggregator has Vitest tests covering standard cases (empty decks,
-  single deck, multiple decks, all card types represented).
-**Notes:** This replaces an existing chart and removes an existing
-aggregator/type rather than purely adding — larger scope than the other two
-"open" items. Should be its own block/PR distinct from the rest of Phase 8
-follow-up work.
+- [x] New aggregator `/lib/aggregators/cardType.ts` computes the average
+  count per `CardType` across included decks (per-deck-then-average pattern).
+- [x] New chart component `CardTypeComposition.tsx` renders the breakdown as
+  a horizontal bar chart, consistent with existing chart styling.
+- [x] `ArchetypeRadar.tsx`, `lib/aggregators/archetype.ts`, and
+  `tests/aggregators/archetype.test.ts` removed.
+- [x] `ArchetypeProfile` removed from `/types/stats.ts`; `CardTypeProfile`
+  added — flagged as `/types` change per CLAUDE.md. `types/index.ts` updated.
+- [x] New aggregator tested in `tests/aggregators/cardType.test.ts` covering
+  empty decks, single deck, multiple decks, primary type classification,
+  unknown cardTypes fallback, and commander card inclusion.
+**Notes:** `/types/stats.ts` modified (flagged per CLAUDE.md). Horizontal bar
+layout chosen for readability of long card type names.
 **Priority:** medium
-**Status:** specced
+**Status:** done
 
 ---
 
@@ -253,7 +293,55 @@ present across the user's decks; color identity is a multi-select of color
 pips where a deck matches if its identity contains all selected colors; card
 count is a min/max numeric range. A "Clear filters" button appears once any
 filter is active, and a "(showing N)" suffix appears next to the inclusion
-count when the filtered view differs from the full deck list.
+count when the filtered view differs from the full deck list. **The
+"filtering does not change `includedDeckIds`" criterion is superseded by the
+"Filter-Driven Deck Inclusion" feature below.**
+**Priority:** medium
+**Status:** done
+
+### Select All / Deselect All
+
+**What:** Add "Select all" and "Deselect all" buttons to the filter bar so
+users can quickly include or exclude every fetched deck without clicking each
+one individually.
+**Why:** As a user's deck library grows, selectively including a few decks
+becomes increasingly tedious. Deselect All + manual re-include, or Select All
+as a reset, eliminates that friction for the most common use patterns.
+**Acceptance criteria:**
+- [x] "Select all" and "Deselect all" buttons appear in the filter bar
+  alongside the existing filter controls.
+- [x] "Select all" includes all fetched decks regardless of the currently
+  active filter and triggers a stats refetch.
+- [x] "Deselect all" excludes all fetched decks regardless of filter; no
+  stats refetch (nothing to compute).
+**Notes:** Buttons live in `DeckFilters.tsx`, with `onSelectAll` /
+`onDeselectAll` props threaded through `DeckSelector` to handlers in
+`page.tsx`. Both operate on all fetched decks, not just the filtered view —
+filters affect display only.
+**Priority:** medium
+**Status:** done
+
+### Filter-Driven Deck Inclusion
+
+**What:** When filters are applied, automatically deselect decks that don't
+appear in the filtered view, and refetch stats for the matching subset. When
+all filters are cleared, restore all decks to included (Select All).
+**Why:** Filters currently narrow the visible grid but leave all decks in the
+profile. The more natural behavior is that the filter IS the selection — if
+you're filtering to green decks, you want your stats to reflect green decks
+only without a separate manual deselect step.
+**Acceptance criteria:**
+- [x] Applying any filter automatically sets `includedDeckIds` to the IDs of
+  matching decks and triggers a stats refetch.
+- [x] Clearing all filters (resetting to defaults) restores all decks to
+  included and triggers a stats refetch with the full set.
+- [x] Manual per-deck toggles continue to work within the filtered view.
+**Notes:** Implemented entirely in `DeckSelector.tsx` via a
+`handleFilterChange` wrapper that calls `onSelectionChange(filteredIds)`
+after `setFilters`. No changes to `DeckFilters.tsx`. Clearing filters passes
+all deck IDs to `onSelectionChange`, which behaves identically to Select All.
+This supersedes the prior "filtering does not change `includedDeckIds`"
+criterion from Deck Filtering Controls.
 **Priority:** medium
 **Status:** done
 
@@ -314,11 +402,23 @@ position reads better.
 
 <!-- Cross-cutting: skeleton states, error boundaries, zero-deck empty states. -->
 
+### Loading Indicators
+
+**What:** Add loading indicators to improve UX when waiting for API calls.
+**Why:** Users are reassured that something is happening in the background and are more inclined to wait patiently.
+**Acceptance criteria:**
+- [ ] Loading spinner appears near or in the place of [Build Profile] button on click.
+- [ ] UI elements appear as unpopulated skeletons until data is fetched.
+**Notes:** 
+**Priority:** high
+**Status:** idea
+
 ---
 
-## Backlog
+## General
 
-<!-- Unplaced ideas — drop anything here that doesn't fit a section yet. -->
+### Dark / Light modes
+
 **What:** Add a dark mode and corresponding toggle to the UI.
 **Why:** Lets users switch between bright and dark layout themes according to their preference.
 **Acceptance criteria:**
@@ -340,4 +440,8 @@ stay constant across themes (only their ring color gets a dark variant) since
 they represent MTG card colors, not UI chrome.
 **Priority:** high
 **Status:** done
+
+## Backlog
+
+<!-- Unplaced ideas — drop anything here that doesn't fit a section yet. -->
 </content>
