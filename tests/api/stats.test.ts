@@ -40,7 +40,7 @@ describe('GET /api/stats', () => {
     expect(body).toHaveProperty('curveProfile');
     expect(body).toHaveProperty('formatProfile');
     expect(body).toHaveProperty('cardOverlap');
-    expect(body).toHaveProperty('archetypeProfile');
+    expect(body).toHaveProperty('cardTypeProfile');
     expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
 

@@ -16,7 +16,7 @@ export type {
   FormatProfile,
   CardOverlapProfile,
   StapleEntry,
-  ArchetypeProfile,
+  CardTypeProfile,
 } from './stats';
 
 export type {

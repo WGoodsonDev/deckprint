@@ -17,7 +17,7 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
     return <ChartPlaceholder label={error} isError />;
   }
 
-  if (!data || (data.staples.length === 0 && data.petCards.length === 0)) {
+  if (!data || data.staples.length === 0) {
     return <ChartPlaceholder label="No card data available." />;
   }
 
@@ -26,7 +26,7 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
       {data.staples.length > 0 && (
         <section>
           <h3 className="text-sm font-semibold text-zinc-700 mb-2 dark:text-zinc-200">
-            Staples — in multiple decks
+            Staples — in 3+ decks
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -53,29 +53,6 @@ export function StaplesList({ data, isLoading, error }: StaplesListProps) {
               Showing top 20 of {data.staples.length}
             </p>
           )}
-        </section>
-      )}
-
-      {data.petCards.length > 0 && (
-        <section>
-          <h3 className="text-sm font-semibold text-zinc-700 mb-2 dark:text-zinc-200">
-            Pet cards — appear in only one deck
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {data.petCards.slice(0, 30).map((card) => (
-              <span
-                key={card.scryfallId}
-                className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-              >
-                {card.name}
-              </span>
-            ))}
-            {data.petCards.length > 30 && (
-              <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
-                +{data.petCards.length - 30} more
-              </span>
-            )}
-          </div>
         </section>
       )}
     </div>

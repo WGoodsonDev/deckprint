@@ -1,11 +1,11 @@
-import type { CardEntry, Color, Format, SourceError } from './core';
+import type { CardType, Color, Format, SourceError } from './core';
 
 export interface ProfileStats {
   colorProfile: ColorProfile;
   curveProfile: CurveProfile;
   formatProfile: FormatProfile;
   cardOverlap: CardOverlapProfile;
-  archetypeProfile: ArchetypeProfile;
+  cardTypeProfile: CardTypeProfile;
   sourceErrors?: SourceError[];
 }
 
@@ -28,7 +28,6 @@ export interface FormatProfile {
 
 export interface CardOverlapProfile {
   staples: StapleEntry[];
-  petCards: CardEntry[];
 }
 
 export interface StapleEntry {
@@ -38,9 +37,6 @@ export interface StapleEntry {
   totalCopies: number;
 }
 
-export interface ArchetypeProfile {
-  aggro: number;
-  midrange: number;
-  control: number;
-  combo: number;
+export interface CardTypeProfile {
+  averageByType: Record<CardType, number>;
 }
