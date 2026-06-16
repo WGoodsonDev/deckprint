@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { Deck, Format } from '@/types/core';
 import { ColorIdentityPips } from './ColorIdentityPips';
-import { DeckFilters, DEFAULT_DECK_FILTERS, type DeckFiltersState } from './DeckFilters';
+import { DeckFilters, DEFAULT_DECK_FILTERS, COLOR_ORDER, type DeckFiltersState } from './DeckFilters';
 
 interface DeckSelectorProps {
   decks: Deck[];
@@ -23,7 +23,7 @@ function matchesFilters(deck: Deck, filters: DeckFiltersState): boolean {
   if (filters.format !== 'all' && deck.format !== filters.format) {
     return false;
   }
-  if (filters.colors.length > 0 && !filters.colors.every((color) => deck.colorIdentity.includes(color))) {
+  if (filters.colors.length < COLOR_ORDER.length && !deck.colorIdentity.every((color) => filters.colors.includes(color))) {
     return false;
   }
   if (filters.minCardCount !== '' && deck.cardCount < Number(filters.minCardCount)) {

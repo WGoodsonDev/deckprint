@@ -3,7 +3,7 @@
 import type { Color, Format } from '@/types/core';
 import { SINGLE_COLOR_HEX } from './ColorIdentityPips';
 
-const COLOR_ORDER: Color[] = ['W', 'U', 'B', 'R', 'G', 'C'];
+export const COLOR_ORDER: Color[] = ['W', 'U', 'B', 'R', 'G', 'C'];
 
 export interface DeckFiltersState {
   format: Format | 'all';
@@ -14,7 +14,7 @@ export interface DeckFiltersState {
 
 export const DEFAULT_DECK_FILTERS: DeckFiltersState = {
   format: 'all',
-  colors: [],
+  colors: [...COLOR_ORDER],
   minCardCount: '',
   maxCardCount: '',
 };
@@ -22,7 +22,7 @@ export const DEFAULT_DECK_FILTERS: DeckFiltersState = {
 export function isDeckFiltersActive(filters: DeckFiltersState): boolean {
   return (
     filters.format !== 'all' ||
-    filters.colors.length > 0 ||
+    filters.colors.length < COLOR_ORDER.length ||
     filters.minCardCount !== '' ||
     filters.maxCardCount !== ''
   );
