@@ -1,11 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import {
   PieChart,
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import type { ColorProfile } from '@/types/stats';
@@ -19,6 +19,25 @@ interface ColorPieChartProps {
 }
 
 const STRIPE_SIZE = 8;
+const LEGEND_COLUMN_THRESHOLD = 10;
+
+const COLOR_COMBINATION_NAMES: Record<string, string> = {
+  // Mono
+  W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green', C: 'Colorless',
+  // 2-color guilds
+  WU: 'Azorius', WB: 'Orzhov', WR: 'Boros', WG: 'Selesnya',
+  UB: 'Dimir', UR: 'Izzet', UG: 'Simic',
+  BR: 'Rakdos', BG: 'Golgari',
+  RG: 'Gruul',
+  // 3-color shards
+  WUB: 'Esper', UBR: 'Grixis', BRG: 'Jund', WRG: 'Naya', WUG: 'Bant',
+  // 3-color wedges
+  WBG: 'Abzan', WUR: 'Jeskai', UBG: 'Sultai', WBR: 'Mardu', URG: 'Temur',
+  // 4-color
+  WUBR: 'Artifice', UBRG: 'Chaos', WBRG: 'Aggression', WURG: 'Altruism', WUBG: 'Growth',
+  // 5-color
+  WUBRG: 'Five-Color',
+};
 
 function patternId(identity: string): string {
   return `color-pattern-${identity}`;
@@ -31,12 +50,17 @@ function identityFill(identity: string): string {
   return `url(#${patternId(identity)})`;
 }
 
-function formatIdentityLabel(identity: string): string {
+function formatIdentityLabel(identity: string, useColorNames: boolean): string {
+  if (useColorNames && COLOR_COMBINATION_NAMES[identity]) {
+    return COLOR_COMBINATION_NAMES[identity];
+  }
   if (identity === 'C') return 'Colorless';
   return identity.split('').join('/');
 }
 
 export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
+  const [showColorNames, setShowColorNames] = useState(false);
+
   if (isLoading) return <ChartShell label="Loading colors…" />;
   if (error) return <ChartShell label={error} isError />;
 
@@ -61,7 +85,7 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
   );
 
   return (
-    <div className="h-64">
+    <div>
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <defs>
           {multicolorIdentities.map((identity) => {
@@ -91,43 +115,60 @@ export function ColorPieChart({ data, isLoading, error }: ColorPieChartProps) {
           })}
         </defs>
       </svg>
-      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 256 }}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            dataKey="value"
-            nameKey="name"
-            cx="40%"
-            cy="50%"
-            outerRadius={80}
-          >
-            {chartData.map((entry) => (
-              <Cell key={entry.name} fill={identityFill(entry.name)} />
-            ))}
-          </Pie>
-          <Tooltip
-            formatter={(value, _name, item) => {
-              const count = typeof value === 'number' ? value : 0;
-              return [`${count} deck${count !== 1 ? 's' : ''}`, formatIdentityLabel(item.payload.name)];
-            }}
-            contentStyle={{
-              backgroundColor: 'var(--chart-tooltip-bg)',
-              borderColor: 'var(--chart-tooltip-border)',
-              color: 'var(--chart-tooltip-text)',
-            }}
-          />
-          <Legend
-            layout="vertical"
-            verticalAlign="middle"
-            align="right"
-            wrapperStyle={{ color: 'var(--chart-axis-text)' }}
-            formatter={(value) => {
-              const percent = percentByIdentity.get(String(value)) ?? 0;
-              return `${formatIdentityLabel(String(value))} ${percent.toFixed(0)}%`;
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+
+      <div className="h-48">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 400, height: 192 }}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+            >
+              {chartData.map((entry) => (
+                <Cell key={entry.name} fill={identityFill(entry.name)} />
+              ))}
+            </Pie>
+            <Tooltip
+              formatter={(value, _name, item) => {
+                const count = typeof value === 'number' ? value : 0;
+                return [`${count} deck${count !== 1 ? 's' : ''}`, formatIdentityLabel(item.payload.name, showColorNames)];
+              }}
+              contentStyle={{
+                backgroundColor: 'var(--chart-tooltip-bg)',
+                borderColor: 'var(--chart-tooltip-border)',
+                color: 'var(--chart-tooltip-text)',
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className={`mt-3 grid gap-x-6 gap-y-1 text-xs text-[color:var(--chart-axis-text)] ${
+        entries.length > LEGEND_COLUMN_THRESHOLD ? 'grid-cols-2' : 'grid-cols-1'
+      }`}>
+        {chartData.map((entry) => (
+          <div key={entry.name} className="flex items-center gap-1.5">
+            <svg width="12" height="12" className="flex-shrink-0 rounded-sm overflow-hidden">
+              <rect width="12" height="12" fill={identityFill(entry.name)} />
+            </svg>
+            <span>
+              {formatIdentityLabel(entry.name, showColorNames)}{' '}
+              {(percentByIdentity.get(entry.name) ?? 0).toFixed(0)}%
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setShowColorNames((prev) => !prev)}
+        className="mt-3 text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 underline underline-offset-2"
+      >
+        {showColorNames ? 'Show color spellings' : 'Show color names'}
+      </button>
     </div>
   );
 }
