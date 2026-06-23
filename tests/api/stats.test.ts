@@ -41,6 +41,7 @@ describe('GET /api/stats', () => {
     expect(body).toHaveProperty('recencyProfile');
     expect(body).toHaveProperty('cardOverlap');
     expect(body).toHaveProperty('cardTypeProfile');
+    expect(body.sourceErrors).toBeUndefined();
     expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
 

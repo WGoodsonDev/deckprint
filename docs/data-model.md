@@ -87,8 +87,8 @@ Represents a user's full cross-platform deck collection as loaded into the app.
 
 ```typescript
 interface UserProfile {
-  sources: PlatformSource[];      // One entry per connected platform username
-  sourceErrors?: SourceError[];   // Present only when one or more platforms failed
+  sources: PlatformSource[];      // One entry per connected platform that succeeded
+  sourceErrors?: SourceError[];   // Omitted entirely when all sources succeed
   decks: Deck[];                  // All fetched decks, across all platforms
   fetchedAt: string;              // ISO 8601 — when this profile was last fetched
 }
@@ -102,7 +102,7 @@ interface PlatformSource {
 interface SourceError {
   platform: Platform;
   username: string;
-  reason: FetchErrorReason;
+  reason: FetchErrorReason;   // from /types/errors — not redeclared here
   message: string;
 }
 ```
