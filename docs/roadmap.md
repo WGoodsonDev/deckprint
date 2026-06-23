@@ -377,27 +377,45 @@ blocking issues. `docs/data-model.md` synced to reflect Phase 8 type changes.
 
 ### Reference files
 - `CLAUDE.md`
-- `/types/stats.ts` — `ProfileStats`
+- `/types/stats.ts` — `ProfileStats` (current shape: `colorProfile`,
+  `curveProfile`, `recencyProfile`, `cardOverlap`, `cardTypeProfile`,
+  `sourceErrors?`)
 - `/lib/aggregators/index.ts`
 
 ### Goal
 Generate a shareable deckbuilder profile card from the user's stats —
 exportable as PNG and accessible via shareable URL.
 
+### Decisions (resolved 2026-06-23)
+Phase 8 removed `FormatProfile`/`primaryFormat` (replaced by
+`recencyProfile`) and `ArchetypeProfile` (replaced by `cardTypeProfile`).
+This phase's original spec assumed both still existed. Resolved:
+
+1. **No primary format on the report card.** No new aggregator —
+   consistent with the dashboard's Phase 8 pivot away from format
+   breakdown. `recencyProfile` covers the temporal angle instead.
+2. **Label vocabulary is card-type-based**, not archetype-based.
+   `cardTypeProfile.averageByType` (`Record<CardType, number>`) drives
+   naming (e.g. "creature-heavy" / "spell-heavy") rather than the deleted
+   aggro/midrange/control/combo scoring. No archetype aggregator is being
+   reintroduced.
+
 ### Features
 
 **Report card layout** — single-screen summary including:
-- Color identity signature (dominant colors)
-- Top 5 most-played cards
-- Archetype breakdown
-- Primary format
-- Generated deckbuilder label (e.g. "Sultai Goodstuff Grinder")
+- Color identity signature (dominant colors) — `colorProfile.mostPlayedColor`
+  and/or `colorProfile.identityDistribution`
+- Top 5 most-played cards — `cardOverlap.staples`, already sorted by
+  `deckCount` descending, `.slice(0, 5)`
+- Card type composition (replaces archetype breakdown) —
+  `cardTypeProfile.averageByType`
+- Generated deckbuilder label (e.g. "Sultai Creature-Heavy Grinder")
 
-**Label generator** — pure function in `/lib/labelGenerator.ts` that
-takes `ProfileStats` and returns a label string. Inputs: `mostPlayedColor`,
-`primaryFormat`, dominant `archetypeProfile` score. Edge cases to handle:
-one deck only, perfectly even color distribution, all formats equal.
-Must have Vitest tests.
+**Label generator** — pure function in `/lib/labelGenerator.ts` that takes
+`ProfileStats` and returns a label string. Inputs:
+`colorProfile.mostPlayedColor`, dominant `CardType` from
+`cardTypeProfile.averageByType`. Edge cases to handle: one deck only,
+perfectly even color distribution, tied card types. Must have Vitest tests.
 
 **Export** — `html2canvas` captures the report card DOM node → PNG
 download. No server-side rendering for v1.
