@@ -407,11 +407,17 @@ position reads better.
 **What:** Add loading indicators to improve UX when waiting for API calls.
 **Why:** Users are reassured that something is happening in the background and are more inclined to wait patiently.
 **Acceptance criteria:**
-- [ ] Loading spinner appears near or in the place of [Build Profile] button on click.
-- [ ] UI elements appear as unpopulated skeletons until data is fetched.
-**Notes:** 
+- [x] Loading spinner appears near or in the place of [Build Profile] button on click.
+- [x] UI elements appear as unpopulated skeletons until data is fetched.
+**Notes:** Spinner SVG added inside the submit button alongside "Loading…" text
+(`UsernameForm.tsx`). During `phase === 'loading'`, a full skeleton layout
+renders in place of the empty page — all four sections (Your Decks, Identity,
+Playing Habits, Collection) show `animate-pulse` placeholder blocks sized to
+match real chart heights. New `SkeletonBlock` helper in `page.tsx`. Chart
+sections additionally dim to 50% opacity with `pointer-events-none` while
+stats refetch on deck toggle (`isStatsRefetching`).
 **Priority:** high
-**Status:** idea
+**Status:** done
 
 ---
 

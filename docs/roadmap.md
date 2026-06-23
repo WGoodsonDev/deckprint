@@ -20,10 +20,8 @@ standards, layer rules, and architecture, see `CLAUDE.md`.
 
 ## Current Status
 
-**Active phase:** Phase 8 — Dashboard UI 🔄 (additional UI feature passes
-planned before moving to Phase 9, see `/docs/phase-8-features.md`)
-**Tests passing (start of Phase 8):** 129
-**Tests passing (current):** 136
+**Active phase:** Phase 9 — Report Card ⬜
+**Tests passing (end of Phase 8):** 144
 **Known blocker:** Moxfield blocked by Cloudflare WAF (403/auth_required).
 Archidekt fully operational. See `/docs/api-reference.md`.
 
@@ -293,7 +291,7 @@ New cases:
 
 ---
 
-## Phase 8 — Dashboard UI 🔄
+## Phase 8 — Dashboard UI ✅
 
 ### Reference files
 - `CLAUDE.md`
@@ -336,15 +334,18 @@ showing Archidekt decks only").
 /app/dashboard/
   page.tsx
   /components/
-    UsernameForm.tsx
+    ColorIdentityPips.tsx
+    DeckFilters.tsx
     DeckSelector.tsx
     SourceErrorBanner.tsx
+    ThemeToggle.tsx
+    UsernameForm.tsx
     /charts/
+      CardTypeComposition.tsx  → horizontal bar chart (replaced ArchetypeRadar)
       ColorPieChart.tsx
       CurveHistogram.tsx
-      FormatBreakdown.tsx
-      ArchetypeRadar.tsx
-      StaplesList.tsx        → ranked table, no chart library needed
+      RecencyDistribution.tsx  → 4-bucket bar chart (replaced FormatBreakdown)
+      StaplesList.tsx          → flex pill layout, 3+ deck threshold
 ```
 
 ### UI-specific requirements
@@ -363,13 +364,12 @@ showing Archidekt decks only").
 - [x] `npx tsc --noEmit` — no TypeScript errors
 
 ### Follow-up work
-A post-ship follow-up pass (deck filtering, dark mode, deck selector
-redesign, multicolor identity chart, platform input, etc.) was completed
-across several blocks — see `/docs/phase-8-features.md` for the full list
-and `docs/handoff.md` for session-by-session notes. Three low/medium
-priority items remain `specced` but unimplemented in
-`/docs/phase-8-features.md`; pick those up as a future
-session/PR when prioritized.
+A post-ship follow-up pass was completed across several sessions covering
+deck filtering, dark mode, deck selector redesign, multicolor identity chart,
+platform input, RecencyDistribution, CardTypeComposition, staple pill layout,
+basic land exclusion, loading indicators, and more. All items in
+`/docs/phase-8-features.md` are marked done. Checkpoint audit passed with no
+blocking issues. `docs/data-model.md` synced to reflect Phase 8 type changes.
 
 ---
 
@@ -433,7 +433,6 @@ Harden the UX, handle edge cases gracefully, add a landing page, and
 prepare for public launch.
 
 ### Tasks
-- Loading skeletons for all dashboard sections
 - User-readable error messages throughout (no raw error objects in UI)
 - Empty state designs for users with zero public decks
 - Rate limit messaging (429 responses surfaced clearly)
