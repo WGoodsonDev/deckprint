@@ -2,16 +2,16 @@ import type { Deck } from '@/types/core';
 import type { ProfileStats } from '@/types/stats';
 import { computeColorProfile } from './color';
 import { computeCurveProfile } from './curve';
-import { computeFormatProfile } from './format';
+import { computeRecencyProfile } from './recency';
 import { computeCardOverlap } from './overlap';
-import { computeArchetypeProfile } from './archetype';
+import { computeCardTypeProfile } from './cardType';
 
 export function computeProfileStats(decks: Deck[]): ProfileStats {
   return {
     colorProfile: computeColorProfile(decks),
     curveProfile: computeCurveProfile(decks),
-    formatProfile: computeFormatProfile(decks),
+    recencyProfile: computeRecencyProfile(decks),
     cardOverlap: computeCardOverlap(decks),
-    archetypeProfile: computeArchetypeProfile(decks),
+    cardTypeProfile: computeCardTypeProfile(decks),
   };
 }

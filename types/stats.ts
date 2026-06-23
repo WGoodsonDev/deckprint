@@ -1,11 +1,11 @@
-import type { CardEntry, Color, Format, SourceError } from './core';
+import type { CardType, Color, SourceError } from './core';
 
 export interface ProfileStats {
   colorProfile: ColorProfile;
   curveProfile: CurveProfile;
-  formatProfile: FormatProfile;
+  recencyProfile: RecencyProfile;
   cardOverlap: CardOverlapProfile;
-  archetypeProfile: ArchetypeProfile;
+  cardTypeProfile: CardTypeProfile;
   sourceErrors?: SourceError[];
 }
 
@@ -20,15 +20,16 @@ export interface CurveProfile {
   overallAverageCmc: number;
 }
 
-export interface FormatProfile {
-  // Partial: formats with zero decks are omitted rather than stored as 0
-  formatCounts: Partial<Record<Format, number>>;
-  primaryFormat: Format;
+export interface RecencyProfile {
+  within30Days: number;
+  within90Days: number;
+  within365Days: number;
+  olderThan365Days: number;
+  mostRecentDeck: { name: string; updatedAt: string } | null;
 }
 
 export interface CardOverlapProfile {
   staples: StapleEntry[];
-  petCards: CardEntry[];
 }
 
 export interface StapleEntry {
@@ -38,9 +39,6 @@ export interface StapleEntry {
   totalCopies: number;
 }
 
-export interface ArchetypeProfile {
-  aggro: number;
-  midrange: number;
-  control: number;
-  combo: number;
+export interface CardTypeProfile {
+  averageByType: Record<CardType, number>;
 }

@@ -38,9 +38,9 @@ describe('GET /api/stats', () => {
     expect(res.status).toBe(200);
     expect(body).toHaveProperty('colorProfile');
     expect(body).toHaveProperty('curveProfile');
-    expect(body).toHaveProperty('formatProfile');
+    expect(body).toHaveProperty('recencyProfile');
     expect(body).toHaveProperty('cardOverlap');
-    expect(body).toHaveProperty('archetypeProfile');
+    expect(body).toHaveProperty('cardTypeProfile');
     expect(body.sourceErrors).toBeUndefined();
     expect(mockResolveUserDecks).toHaveBeenCalledWith('testuser', 'archidekt');
   });
@@ -59,9 +59,8 @@ describe('GET /api/stats', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    // formatProfile.formatCounts should reflect exactly 2 commander decks
-    // (makeDeck defaults to format: 'commander')
-    expect(body.formatProfile.formatCounts.commander).toBe(2);
+    // makeDeck defaults to updatedAt: '2024-01-01', so all fixtures land in olderThan365Days
+    expect(body.recencyProfile.olderThan365Days).toBe(2);
   });
 
   it('returns 200 with zero-value stats when include contains only unrecognized IDs', async () => {
@@ -75,8 +74,8 @@ describe('GET /api/stats', () => {
 
     expect(res.status).toBe(200);
     expect(body).toHaveProperty('colorProfile');
-    // No decks matched — format counts should be empty
-    expect(Object.keys(body.formatProfile.formatCounts)).toHaveLength(0);
+    // No decks matched — all buckets should be zero
+    expect(body.recencyProfile.mostRecentDeck).toBeNull();
   });
 
   it('returns 200 with merged stats when both platforms are provided', async () => {
@@ -90,7 +89,7 @@ describe('GET /api/stats', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.formatProfile.formatCounts.commander).toBe(3);
+    expect(body.recencyProfile.olderThan365Days).toBe(3);
   });
 
   it('returns 400 when neither moxfield nor archidekt param is provided', async () => {
@@ -138,7 +137,7 @@ describe('GET /api/stats', () => {
 
     expect(res.status).toBe(200);
     expect(body).toHaveProperty('colorProfile');
-    expect(body.formatProfile.formatCounts.commander).toBe(2);
+    expect(body.recencyProfile.olderThan365Days).toBe(2);
     expect(body.sourceErrors).toHaveLength(1);
     expect(body.sourceErrors[0]).toMatchObject({
       platform: 'moxfield',
@@ -159,7 +158,7 @@ describe('GET /api/stats', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.formatProfile.formatCounts.commander).toBe(1);
+    expect(body.recencyProfile.olderThan365Days).toBe(1);
     expect(body.sourceErrors).toHaveLength(1);
     expect(body.sourceErrors[0].reason).toBe('not_found');
   });

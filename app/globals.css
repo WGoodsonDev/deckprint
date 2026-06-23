@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --chart-grid: #e4e4e7;
+  --chart-axis-text: #3f3f46;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e4e4e7;
+  --chart-tooltip-text: #18181b;
+  --chart-bar-primary: #6366f1;
+  --chart-bar-secondary: #a5b4fc;
 }
 
 @theme inline {
@@ -12,11 +22,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  --chart-grid: #3f3f46;
+  --chart-axis-text: #a1a1aa;
+  --chart-tooltip-bg: #27272a;
+  --chart-tooltip-border: #3f3f46;
+  --chart-tooltip-text: #f4f4f5;
+  --chart-bar-primary: #818cf8;
+  --chart-bar-secondary: #4338ca;
 }
 
 body {

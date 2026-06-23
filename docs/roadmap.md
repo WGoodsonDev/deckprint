@@ -20,8 +20,8 @@ standards, layer rules, and architecture, see `CLAUDE.md`.
 
 ## Current Status
 
-**Active phase:** Phase 7 — Partial-Source Resilience 🔄
-**Tests passing (start of Phase 7):** 121
+**Active phase:** Phase 9 — Report Card ⬜
+**Tests passing (end of Phase 8):** 144
 **Known blocker:** Moxfield blocked by Cloudflare WAF (403/auth_required).
 Archidekt fully operational. See `/docs/api-reference.md`.
 
@@ -102,7 +102,7 @@ Moxfield callers — direct motivation for Phase 7.
 
 ---
 
-## Phase 7 — Partial-Source Resilience 🔄
+## Phase 7 — Partial-Source Resilience ✅
 
 ### Reference files
 - `CLAUDE.md`
@@ -291,7 +291,7 @@ New cases:
 
 ---
 
-## Phase 8 — Dashboard UI ⬜
+## Phase 8 — Dashboard UI ✅
 
 ### Reference files
 - `CLAUDE.md`
@@ -334,15 +334,18 @@ showing Archidekt decks only").
 /app/dashboard/
   page.tsx
   /components/
-    UsernameForm.tsx
+    ColorIdentityPips.tsx
+    DeckFilters.tsx
     DeckSelector.tsx
     SourceErrorBanner.tsx
+    ThemeToggle.tsx
+    UsernameForm.tsx
     /charts/
+      CardTypeComposition.tsx  → horizontal bar chart (replaced ArchetypeRadar)
       ColorPieChart.tsx
       CurveHistogram.tsx
-      FormatBreakdown.tsx
-      ArchetypeRadar.tsx
-      StaplesList.tsx        → ranked table, no chart library needed
+      RecencyDistribution.tsx  → 4-bucket bar chart (replaced FormatBreakdown)
+      StaplesList.tsx          → flex pill layout, 3+ deck threshold
 ```
 
 ### UI-specific requirements
@@ -351,13 +354,22 @@ showing Archidekt decks only").
   `ProfileStats` as props.
 
 ### Verification Checklist
-- [ ] Every chart handles loading / error / empty states
-- [ ] No aggregation logic in any component or API route
-- [ ] Deck selector correctly toggles `includedInProfile` and triggers
+- [x] Every chart handles loading / error / empty states
+- [x] No aggregation logic in any component or API route
+- [x] Deck selector correctly toggles `includedInProfile` and triggers
       re-aggregation
-- [ ] `SourceErrorBanner` appears when `sourceErrors` is present
-- [ ] Full end-to-end test with a real Archidekt username
-- [ ] `npx tsc --noEmit` — no TypeScript errors
+- [x] `SourceErrorBanner` appears when `sourceErrors` is present
+- [x] Full end-to-end test with a real Archidekt username (Archidekt
+      `Bud_McChud`, 12 decks, verified repeatedly via Playwright)
+- [x] `npx tsc --noEmit` — no TypeScript errors
+
+### Follow-up work
+A post-ship follow-up pass was completed across several sessions covering
+deck filtering, dark mode, deck selector redesign, multicolor identity chart,
+platform input, RecencyDistribution, CardTypeComposition, staple pill layout,
+basic land exclusion, loading indicators, and more. All items in
+`/docs/phase-8-features.md` are marked done. Checkpoint audit passed with no
+blocking issues. `docs/data-model.md` synced to reflect Phase 8 type changes.
 
 ---
 
@@ -421,7 +433,6 @@ Harden the UX, handle edge cases gracefully, add a landing page, and
 prepare for public launch.
 
 ### Tasks
-- Loading skeletons for all dashboard sections
 - User-readable error messages throughout (no raw error objects in UI)
 - Empty state designs for users with zero public decks
 - Rate limit messaging (429 responses surfaced clearly)
