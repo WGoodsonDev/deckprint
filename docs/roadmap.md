@@ -20,8 +20,8 @@ standards, layer rules, and architecture, see `CLAUDE.md`.
 
 ## Current Status
 
-**Active phase:** Phase 9 — Report Card ⬜
-**Tests passing (end of Phase 8):** 144
+**Active phase:** Phase 10 — Polish & Launch ⬜
+**Tests passing (end of Phase 9):** 179
 **Known blocker:** Moxfield blocked by Cloudflare WAF (403/auth_required).
 Archidekt fully operational. See `/docs/api-reference.md`.
 
@@ -373,7 +373,7 @@ blocking issues. `docs/data-model.md` synced to reflect Phase 8 type changes.
 
 ---
 
-## Phase 9 — Report Card ⬜
+## Phase 9 — Report Card ✅
 
 ### Reference files
 - `CLAUDE.md`
@@ -435,12 +435,23 @@ re-fetch and regenerate automatically.
   labelGenerator.ts
 ```
 
+### Follow-up work
+Feature pass completed in PR #8 covering: library summary stats
+(`deckCount`/`uniqueCardCount` added to `ProfileStats`), color breadth
+stat, mana curve sparkline, avg CMC speed descriptor, deck count
+descriptor, tail word variety (Brewer/Tactician/Architect/Pilot/Grinder),
+copy shareable URL button, and export size presets (Auto/Square/Widescreen).
+Color identity logic updated to favor multicolor over mono. Calibrated
+against Archidekt `Bud_McChud` (12 decks). 179 tests passing.
+
+Dashboard state persistence on back-navigation deferred to Phase 10.
+
 ### Verification Checklist
-- [ ] Shareable URL correctly restores state on load
-- [ ] Export produces a clean PNG
-- [ ] Label generator handles all edge cases (tested)
-- [ ] Report card generation is stateless and reproducible from same input
-- [ ] `npx tsc --noEmit` — no TypeScript errors
+- [x] Shareable URL correctly restores state on load
+- [x] Export produces a clean PNG
+- [x] Label generator handles all edge cases (tested)
+- [x] Report card generation is stateless and reproducible from same input
+- [x] `npx tsc --noEmit` — no TypeScript errors
 
 ---
 
