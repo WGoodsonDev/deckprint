@@ -7,6 +7,7 @@ import type { ProfileStats } from '@/types/stats';
 import { SourceErrorBanner } from '@/app/dashboard/components/SourceErrorBanner';
 import { ReportCard } from './components/ReportCard';
 import { ExportButton } from './components/ExportButton';
+import { CopyLinkButton } from './components/CopyLinkButton';
 
 type PagePhase = 'loading' | 'loaded' | 'error';
 
@@ -91,7 +92,10 @@ function ReportData({ queryString }: { queryString: string }) {
       <div ref={cardRef}>
         <ReportCard stats={stats} />
       </div>
-      <ExportButton targetRef={cardRef} />
+      <div className="flex items-center gap-2">
+        <ExportButton targetRef={cardRef} />
+        <CopyLinkButton />
+      </div>
     </div>
   );
 }
