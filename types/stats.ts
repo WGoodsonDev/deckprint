@@ -1,6 +1,8 @@
 import type { CardType, Color, SourceError } from './core';
 
 export interface ProfileStats {
+  deckCount: number;
+  uniqueCardCount: number;
   colorProfile: ColorProfile;
   curveProfile: CurveProfile;
   recencyProfile: RecencyProfile;
