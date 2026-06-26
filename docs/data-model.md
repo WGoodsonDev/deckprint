@@ -148,6 +148,8 @@ These are the types that aggregators return and the dashboard consumes.
 
 ```typescript
 interface ProfileStats {
+  deckCount: number;              // Total number of included decks
+  uniqueCardCount: number;        // Distinct scryfallId values across mainboard + commanders
   colorProfile: ColorProfile;
   curveProfile: CurveProfile;
   recencyProfile: RecencyProfile;
